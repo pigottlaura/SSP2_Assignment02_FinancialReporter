@@ -21,3 +21,12 @@ nav ul, ul#main-sidebar{
 nav ul li, ul#main-sidebar li {
     flex: 1;
 }
+
+form label, form input:not([type="checkbox"]) {
+    display: inline-block;
+    width: 49%;
+}
+
+form input[type="submit"] {
+    width: 100%;
+}
