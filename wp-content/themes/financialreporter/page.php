@@ -2,7 +2,10 @@
 <?php get_header(); ?>
 
 <div class="row">
-    <div class="col-xs-12">
+    <div class="col-xs-3">
+        <?php include("sidebar.php"); ?>
+    </div>
+    <div class="col-xs-9">
         default
         <?php // The Loop ?>
         <?php if(have_posts()) : while(have_posts()) : the_post(); ?>

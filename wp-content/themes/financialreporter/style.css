@@ -7,17 +7,17 @@ Author: Laura Pigott
 Author URI: http://www.pigottlaura.com
 */
 
-#menu-header-menu {
+nav ul {
     display: inline-flex;
     width: 100%;
     margin-top: 20px;
 }
 
-ul li {
-    flex: 1;
-}
-
-ul {
+nav ul, ul#main-sidebar{
     padding: 0;
     list-style: none;
+}
+
+nav ul li, ul#main-sidebar li {
+    flex: 1;
 }
