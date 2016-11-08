@@ -22,9 +22,27 @@ nav ul li, ul#main-sidebar li {
     flex: 1;
 }
 
-form label, form input:not([type="checkbox"]) {
+form label, form input:not([type="checkbox"]), form select, form textarea {
     display: inline-block;
     width: 49%;
+    vertical-align: top;
+}
+form input:not([type="checkbox"]), form select, form textarea {
+    width: 60%;
+    float: right;
+}
+form label {
+    margin-bottom: 2%;
+}
+p label {
+    margin: initial !important;;
+    width: initial !important;
+}
+form textarea {
+    width: 80%;
+}
+form select {
+    height: 26px;
 }
 
 form input[type="submit"] {
@@ -45,4 +63,12 @@ form input[type="submit"] {
 
 .wp-role-administrator #customAdminBar {
     padding-top: 1.5%;
+}
+
+.hidden {
+    display: none;
+}
+
+.fullWidth {
+    width: 100% !important;
 }
