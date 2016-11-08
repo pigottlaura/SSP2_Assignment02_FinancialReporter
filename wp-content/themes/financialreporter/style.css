@@ -30,3 +30,15 @@ form label, form input:not([type="checkbox"]) {
 form input[type="submit"] {
     width: 100%;
 }
+
+#customAdminBar {
+    min-height: 60px;
+    text-align: right;
+    background-color: #000000;
+    box-shadow: #000000 0 -100px 0 100px;
+    color: #FFFFFF;
+    padding: 0 2% 2% 2%;
+}
+#customAdminBar button {
+    margin-left: 20px;
+}

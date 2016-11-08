@@ -11,6 +11,19 @@
         <?php wp_head(); ?>
     </head>
     <body class="container-fluid">
+        <?php
+            if(is_user_logged_in()){
+                if(get_user_role() == "subscriber"){
+                    $currentUser = wp_get_current_user();
+                    show_admin_bar(false);
+
+                    echo "<div class='row' id='customAdminBar'>";
+                    echo "Welcome back " . $currentUser->display_name . "!";
+                    echo "<button><a href='" . wp_logout_url(home_url()) . "'>Logout</a></button>";
+                    echo "</div>";
+                }
+            }
+        ?>
         <div class="row">
             <div class="col-xs-3">
                 <h1>
