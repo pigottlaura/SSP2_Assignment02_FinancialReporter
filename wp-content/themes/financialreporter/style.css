@@ -6,3 +6,18 @@ Version: 1
 Author: Laura Pigott
 Author URI: http://www.pigottlaura.com
 */
+
+#menu-header-menu {
+    display: inline-flex;
+    width: 100%;
+    margin-top: 20px;
+}
+
+ul li {
+    flex: 1;
+}
+
+ul {
+    padding: 0;
+    list-style: none;
+}
