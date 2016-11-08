@@ -10,20 +10,28 @@
         <link rel="stylesheet" type="text/css" href="<?php echo get_bloginfo('template_url'); ?>/style.css">
         <?php wp_head(); ?>
     </head>
-    <body class="container-fluid">
+    <body class="container-fluid<?php if(is_user_logged_in()){ echo ' wp-logged-in wp-role-' . get_user_role(); } ?>">
         <?php
             if(is_user_logged_in()){
-                if(get_user_role() == "subscriber"){
-                    $currentUser = wp_get_current_user();
+                echo "<div class='row' id='customAdminBar'>";
+                echo "<div class='col-xs-12'>";
+
+                $userRole = get_user_role();
+                $currentUser = wp_get_current_user();
+                if($userRole == "subscriber"){
                     show_admin_bar(false);
 
-                    echo "<div class='row' id='customAdminBar'>";
                     echo "Welcome back " . $currentUser->display_name . "!";
                     echo "<button><a href='/ssp2/assignment02/expenses?action=addExpense'>Add an Expense</a></button>";
                     echo "<button><a href='/ssp2/assignment02/expenses?action=viewAll'>View my Expenses</a></button>";
-                    echo "<button><a href='" . wp_logout_url(home_url()) . "'>Logout</a></button>";
-                    echo "</div>";
+                } else if($userRole == "administrator"){
+                    echo "Hello Admin " . $currentUser->display_name . "!";
+                    echo "<button><a href='/ssp2/assignment02/expenses?action=viewAll'>View all Expenses</a></button>";
                 }
+
+                echo "<button><a href='" . wp_logout_url(home_url()) . "'>Logout</a></button>";
+                echo "</div>";
+                echo "</div>";
             }
         ?>
         <div class="row">

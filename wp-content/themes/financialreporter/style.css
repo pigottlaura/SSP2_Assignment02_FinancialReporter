@@ -32,7 +32,7 @@ form input[type="submit"] {
 }
 
 #customAdminBar {
-    min-height: 60px;
+    height: 60px;
     text-align: right;
     background-color: #000000;
     box-shadow: #000000 0 -100px 0 100px;
@@ -41,4 +41,8 @@ form input[type="submit"] {
 }
 #customAdminBar button {
     margin-left: 20px;
+}
+
+.wp-role-administrator #customAdminBar {
+    padding-top: 1.5%;
 }
