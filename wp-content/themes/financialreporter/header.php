@@ -19,6 +19,8 @@
 
                     echo "<div class='row' id='customAdminBar'>";
                     echo "Welcome back " . $currentUser->display_name . "!";
+                    echo "<button><a href='/ssp2/assignment02/expenses?action=addExpense'>Add an Expense</a></button>";
+                    echo "<button><a href='/ssp2/assignment02/expenses?action=viewAll'>View my Expenses</a></button>";
                     echo "<button><a href='" . wp_logout_url(home_url()) . "'>Logout</a></button>";
                     echo "</div>";
                 }

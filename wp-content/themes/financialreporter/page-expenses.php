@@ -22,7 +22,17 @@
             </div>
         </div>
         <div class="row">
-
+            <div class="col-xs-12">
+                <?php
+                    if(isset($_GET["action"])){
+                        if($_GET["action"] == "addExpense"){
+                            echo "Add a new expense";
+                        } else if ($_GET["action"] == "viewAll"){
+                            echo "View All Expenses";
+                        }
+                    }
+                ?>
+            </div>
         </div>
     </div>
 </div>
