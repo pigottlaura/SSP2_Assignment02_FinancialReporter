@@ -21,6 +21,7 @@
 
                 wp_set_current_user($userId);
                 wp_set_auth_cookie($userId);
+                // wp_mail();
                 wp_redirect("/ssp2/assignment02/expenses");
             }
         }

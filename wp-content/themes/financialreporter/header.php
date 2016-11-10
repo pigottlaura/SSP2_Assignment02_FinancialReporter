@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<html class="noMargin">
     <head>
         <title>
             <?php
@@ -13,13 +14,14 @@
     <body class="container-fluid<?php if(is_user_logged_in()){ echo ' wp-logged-in wp-role-' . get_user_role(); } ?>">
         <?php
             if(is_user_logged_in()){
+                show_admin_bar(false);
+
                 echo "<div class='row' id='customAdminBar'>";
                 echo "<div class='col-xs-12'>";
 
                 $userRole = get_user_role();
                 $currentUser = wp_get_current_user();
                 if($userRole == "subscriber"){
-                    show_admin_bar(false);
 
                     echo "Welcome back " . $currentUser->display_name . "!";
                     echo "<button><a href='/ssp2/assignment02/expenses?action=addExpense'>Add an Expense</a></button>";

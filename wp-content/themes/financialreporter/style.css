@@ -6,7 +6,9 @@ Version: 1
 Author: Laura Pigott
 Author URI: http://www.pigottlaura.com
 */
-
+html {
+    overflow-y: scroll;
+}
 nav ul {
     display: inline-flex;
     width: 100%;
@@ -55,14 +57,10 @@ form input[type="submit"] {
     background-color: #000000;
     box-shadow: #000000 0 -100px 0 100px;
     color: #FFFFFF;
-    padding: 0 2% 2% 2%;
+    padding: 1.3%;
 }
 #customAdminBar button {
     margin-left: 20px;
-}
-
-.wp-role-administrator #customAdminBar {
-    padding-top: 1.5%;
 }
 
 .hidden {
@@ -71,4 +69,8 @@ form input[type="submit"] {
 
 .fullWidth {
     width: 100% !important;
+}
+
+.noMargin {
+    margin: 0 !important;
 }
