@@ -114,7 +114,7 @@
                             if($expense->approved == "Pending"){
                                 echo "<td><a href='./?action=removeExpense&expenseId=" . $expense->id . "'>Remove</a></td>";
                             } else {
-                                echo "<td>&nbsp;</td>";
+                                echo "<td>None</td>";
                             }
                             echo "</tr>";
                         }

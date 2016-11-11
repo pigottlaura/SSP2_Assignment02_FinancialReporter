@@ -29,6 +29,10 @@
         return $wpdb->get_var("SELECT name FROM expense_category WHERE id=" . $categoryId);
     }
 
+    function lp_get_employee_name($employeeId){
+        global $wpdb;
+        return $wpdb->get_var("SELECT display_name FROM wp_users WHERE id=" . $employeeId);
+    }
     // Validating input data
     function lp_validate_data($data, $options){
         $result = (object) array(

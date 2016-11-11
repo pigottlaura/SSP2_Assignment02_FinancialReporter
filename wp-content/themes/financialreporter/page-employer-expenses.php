@@ -2,40 +2,38 @@
 <?php
     // Only logged in administrators can access this page
     if(is_user_logged_in()) {
-        if(get_user_role() != "administrator"){
+        if(get_user_role() == "administrator") {
+            // Allow this user to complete the following actions
+            if (isset($_GET["action"])) {
+                global $wpdb;
+
+                switch ($_GET["action"]) {
+                    case "expenseApproval": {
+                        if (isset($_GET["expenseId"]) && isset($_GET["decision"])) {
+                            $expenseDecision = $_GET["decision"] == 0 ? "No" : "Yes";
+                            $wpdb->update("expense",
+                                array("approved" => $expenseDecision),
+                                array("id" => $_GET["expenseId"]),
+                                array("%s"),
+                                array("%d")
+                            );
+                            wp_redirect("./");
+                        }
+                        break;
+                    }
+                }
+            }
+        } else{
             wp_redirect("/ssp2/assignment02/expenses");
         }
     } else {
         wp_redirect("/ssp2/assignment02/user-login");
     }
-
-    if(isset($_GET["action"])){
-        global $wpdb;
-
-        switch($_GET["action"]){
-            case "expenseApproval": {
-                if(isset($_GET["expenseId"]) && isset($_GET["decision"])){
-                    $expenseDecision = $_GET["decision"] == 0 ? "No" : "Yes";
-                    $wpdb->update("expense",
-                        array("approved" => $expenseDecision),
-                        array("id" => $_GET["expenseId"]),
-                        array("%s"),
-                        array("%d")
-                    );
-                    wp_redirect("./");
-                }
-                break;
-            }
-        }
-    }
 ?>
 <?php get_header(); ?>
 
 <div class="row">
-    <div class="col-xs-3">
-        <?php include("sidebar.php"); ?>
-    </div>
-    <div class="col-xs-9">
+    <div class="col-xs-12">
         <div class="row">
             <div class="col-xs-12">
                 <?php // The Loop ?>
@@ -50,6 +48,8 @@
                 <table>
                     <tr>
                         <th>ID</th>
+                        <th>Employee ID</th>
+                        <th>Employee Name</th>
                         <th>Date</th>
                         <th>Time</th>
                         <th>Category</th>
@@ -69,6 +69,8 @@
                             // Creating Table Row
                             echo "<tr>";
                             echo "<td>#" . $expense->id . "</td>";
+                            echo "<td>#" . $expense->employee_id . "</td>";
+                            echo "<td>" . lp_get_employee_name($expense->employee_id) . "</td>";
                             echo "<td>" . date_format($expenseDate, "jS M Y") . "</td>";
                             echo "<td>" . date_format($expenseDate, "G:ha") . "</td>";
                             echo "<td>" . lp_get_category($expense->category) . "</td>";
@@ -87,7 +89,7 @@
                                 echo "<a href='./?action=expenseApproval&decision=0&expenseId=" . $expense->id . "'>Reject</a>";
                                 echo "</td>";
                             } else {
-                                echo "<td>None</td>";
+                                echo "<td>Completed</td>";
                             }
                             echo "</tr>";
                         }
