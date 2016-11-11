@@ -9,6 +9,7 @@
         <link rel="shortcut icon" href="<?php echo get_bloginfo('template_url'); ?>/favicon.ico" />
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
         <link rel="stylesheet" type="text/css" href="<?php echo get_bloginfo('template_url'); ?>/style.css">
+        <script src="<?php echo get_bloginfo('template_url'); ?>/script.js"></script>
         <?php wp_head(); ?>
     </head>
     <body class="container-fluid<?php if(is_user_logged_in()){ echo ' wp-logged-in wp-role-' . get_user_role(); } ?>">

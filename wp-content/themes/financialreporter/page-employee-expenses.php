@@ -79,45 +79,56 @@
                 <h3>Expenses</h3>
                 <table>
                     <tr>
-                        <th>ID</th>
-                        <th>Date</th>
-                        <th>Time</th>
-                        <th>Category</th>
-                        <th>Cost</th>
-                        <th>Receipt</th>
-                        <th>Description</th>
-                        <th>Approved</th>
+                        <th id="id" class="orderHeading">ID</th>
+                        <th id="date_submitted" class="orderHeading">Submitted On</th>
+                        <th id="category_name" class="orderHeading">Category</th>
+                        <th id="cost" class="orderHeading">Cost</th>
+                        <th id="receipt" class="orderHeading">Receipt</th>
+                        <th id="description" class="orderHeading">Description</th>
+                        <th id="status" class="orderHeading">Status</th>
                         <th>Action</th>
                     </tr>
                     <?php
                         global $wpdb;
-                        $expenses = $wpdb->get_results("SELECT * FROM expense WHERE employee_id=" . get_current_user_id());
-
-                        foreach ($expenses as $key => $expense){
-                            // Setting up values
-                            $expenseDate = date_create($expense->date_submitted);
-
-                            // Creating Table Row
-                            echo "<tr>";
-                            echo "<td>#" . $expense->id . "</td>";
-                            echo "<td>" . date_format($expenseDate, "jS M Y") . "</td>";
-                            echo "<td>" . date_format($expenseDate, "G:ha") . "</td>";
-                            echo "<td>" . lp_get_category($expense->category) . "</td>";
-                            echo "<td>&euro;" . $expense->cost . "</td>";
-                            if($expense->receipt == null){
-                                echo "<td>None</td>";
-                            } else {
-                                echo "<td><a href='" . $expense->receipt . "' target='_blank'>View</a></td>";
-                            }
-                            echo "<td>" . $expense->description . "</td>";
-                            echo "<td>" . $expense->approved . "</td>";
-                            if($expense->approved == "Pending"){
-                                echo "<td><a href='./?action=removeExpense&expenseId=" . $expense->id . "'>Remove</a></td>";
-                            } else {
-                                echo "<td>None</td>";
-                            }
-                            echo "</tr>";
+                        if(isset($_COOKIE["orderBy"]) && isset($_COOKIE["order"])){
+                            $orderBy = $_COOKIE["orderBy"];
+                            $order = $_COOKIE["order"];
+                        } else {
+                            $orderBy = "date_submitted";
+                            $order = "asc";
                         }
+                        $expenses = $wpdb->get_results("SELECT expense.*, expense_category.name as 'category_name' FROM expense LEFT JOIN expense_category ON expense.category = expense_category.id ORDER BY " . $orderBy . " " . $order);
+
+
+                        if(count($expenses) > 0){
+                            foreach ($expenses as $key => $expense){
+                                // Setting up values
+                                $expenseDate = date_create($expense->date_submitted);
+
+                                // Creating Table Row
+                                echo "<tr>";
+                                echo "<td>#" . $expense->id . "</td>";
+                                echo "<td>" . date_format($expenseDate, "jS M Y @ G:ia") . "</td>";
+                                echo "<td>" . lp_get_category($expense->category) . "</td>";
+                                echo "<td>&euro;" . $expense->cost . "</td>";
+                                if($expense->receipt == null){
+                                    echo "<td>None</td>";
+                                } else {
+                                    echo "<td><a href='" . $expense->receipt . "' target='_blank'>View</a></td>";
+                                }
+                                echo "<td>" . $expense->description . "</td>";
+                                echo "<td>" . $expense->status . "</td>";
+                                if($expense->status == "Pending"){
+                                    echo "<td><a href='./?action=removeExpense&expenseId=" . $expense->id . "'>Remove</a></td>";
+                                } else {
+                                    echo "<td>None</td>";
+                                }
+                                echo "</tr>";
+                            }
+                        } else {
+                            echo "<tr><td colspan='8'>You no previous expense claims</td></tr>";
+                        }
+
                     ?>
                 </table>
             </div>
