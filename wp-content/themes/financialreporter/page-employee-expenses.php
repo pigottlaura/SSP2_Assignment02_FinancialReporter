@@ -10,15 +10,33 @@
     }
 
     if(isset($_GET["action"])){
-        if($_GET["action"] == "addExpense" && count($_POST) > 0){
-            //var_dump($_POST);
-            global $wpdb;
+        global $wpdb;
 
-            if(validateData($_POST, array())){
-                $wpdb->query($wpdb->prepare(
-                    "INSERT INTO expense (employee_id, category, cost, description) VALUES(%d, %d, %d, %s)",
-                    array(get_current_user_id(), number_format($_POST['category'], 0), number_format($_POST['cost'], 2), $_POST['description'])
-                ));
+        switch($_GET["action"]) {
+            // Adding an expense
+            case "addExpense": {
+                if (count($_POST) > 0) {
+                    if (lp_validate_data($_POST, array())) {
+                        $wpdb->query($wpdb->prepare(
+                            "INSERT INTO expense (employee_id, category, cost, description) VALUES(%d, %d, %d, %s)",
+                            array(get_current_user_id(), number_format($_POST['category'], 0), number_format($_POST['cost'], 2), $_POST['description'])
+                        ));
+                        wp_redirect("./");
+                    }
+                }
+                break;
+            }
+            // Allowing employees to remove expenses that have not yet been approved
+            case "removeExpense": {
+                if(isset($_GET["expenseId"])){
+                    $wpdb->delete(
+                        "expense",
+                        array("id" => $_GET["expenseId"], "approved" => 0),
+                        array("%d", "%d")
+                    );
+                    wp_redirect("./");
+                }
+                break;
             }
         }
     }
@@ -27,47 +45,86 @@
 
 <div class="row">
     <div class="col-xs-3">
-        <?php include("sidebar.php"); ?>
+        <h3>Add an Expense</h3>
+        <form method="POST" action="./?action=addExpense">
+            <label>Category
+                <select name="category" required>
+                    <option selected disabled class="hidden"></option>
+                    <?php
+                        // Loading Categories in from Database
+                        global $wpdb;
+                        $categories = $wpdb->get_results("SELECT * FROM expense_category");
+
+                        foreach($categories as $key => $category){
+                            echo "<option value='" . $category->id . "'>" . $category->name . "</option>";
+                        }
+                    ?>
+                </select>
+            </label>
+            <label>Cost (€)
+                <input type="number" name="cost" min="0" required>
+            </label>
+            <label class="fullWidth">Attach Receipt
+                <input type="file" name="receipt">
+            </label>
+            <label class="fullWidth">Description
+                <textarea name="description" rows="4" required></textarea>
+            </label>
+            <input type="submit" value="Add Expense">
+        </form>
     </div>
     <div class="col-xs-9">
         <div class="row">
             <div class="col-xs-12">
-                <?php // The Loop ?>
-                <?php if(have_posts()) : while(have_posts()) : the_post(); ?>
-                    <h2><?php the_title(); ?></h2>
-                    <?php the_content(); ?>
-                <?php endwhile; endif; ?>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-xs-6">
-                <h3>Add an Expense</h3>
-                <form method="POST" action="./?action=addExpense">
-                    <label>Category
-                        <select name="category">
-                            <option selected disabled class="hidden"></option>
-                            <?php
-                                // Loading Categories in from Database
-                                global $wpdb;
-                                $categories = $wpdb->get_results("SELECT * FROM expense_category");
+                <h3>Expenses</h3>
+                <table>
+                    <tr>
+                        <th>ID</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Category</th>
+                        <th>Cost</th>
+                        <th>Receipt</th>
+                        <th>Description</th>
+                        <th>Approved</th>
+                        <th>Action</th>
+                    </tr>
+                    <?php
+                        global $wpdb;
+                        $expenses = $wpdb->get_results("SELECT * FROM expense WHERE employee_id=" . get_current_user_id());
 
-                                foreach($categories as $key => $category){
-                                    echo "<option value='" . $category->id . "'>" . $category->name . "</option>";
-                                }
-                            ?>
-                        </select>
-                    </label>
-                    <label>Cost (€)
-                        <input type="number" name="cost" value="0.00" min="0">
-                    </label>
-                    <label class="fullWidth">Attach Receipt
-                        <input type="file" name="receipt">
-                    </label>
-                    <label class="fullWidth">Description
-                        <textarea name="description" rows="4"></textarea>
-                    </label>
-                    <input type="submit" value="Add Expense">
-                </form>
+                        foreach ($expenses as $key => $expense){
+                            // Setting up values
+                            $expenseDate = date_create($expense->date_submitted);
+                            if($expense->date_approved == null){
+                                $expenseApproved = "Pending";
+                            } else {
+                                $expenseApproved = $expense->approved == 1 ? "Yes" : "No";
+                            }
+
+                            // Creating Table Row
+                            echo "<tr>";
+                            echo "<td>#" . $expense->id . "</td>";
+                            echo "<td>" . date_format($expenseDate, "jS M Y") . "</td>";
+                            echo "<td>" . date_format($expenseDate, "G:ha") . "</td>";
+                            echo "<td>" . lp_get_category($expense->category) . "</td>";
+                            echo "<td>&euro;" . $expense->cost . "</td>";
+                            if($expense->receipt == null){
+                                echo "<td>None</td>";
+                            } else {
+                                echo "<td><a href='" . $expense->receipt . "' target='_blank'>View</a></td>";
+                            }
+                            echo "<td>" . $expense->description . "</td>";
+                            echo "<td>" . $expenseApproved . "</td>";
+                            if($expenseApproved == "Pending"){
+                                echo "<td><a href='./?action=removeExpense&expenseId=" . $expense->id . "'>Remove</a></td>";
+                            } else {
+                                echo "<td>&nbsp;</td>";
+                            }
+                            echo "</tr>";
+                        }
+                    ?>
+                </table>
             </div>
         </div>
     </div>

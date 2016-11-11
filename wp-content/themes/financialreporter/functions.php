@@ -3,7 +3,7 @@
     add_theme_support('menus');
 
     // Registering sidebar
-    if( function_exists('register_sidebar')){
+    if(function_exists('register_sidebar')){
         register_sidebar(array(
             'name' => 'Main Sidebar',
             'id' => 'main-sidebar'
@@ -23,7 +23,14 @@
         return $usersRole;
     }
 
-    function validateData($data, $options){
+    // Getting the name of a category based on it's id
+    function lp_get_category($categoryId){
+        global $wpdb;
+        return $wpdb->get_var("SELECT name FROM expense_category WHERE id=" . $categoryId);
+    }
+
+    // Validating input data
+    function lp_validate_data($data, $options){
         $result = (object) array(
             "dataValidated" => false,
             "errors" => array()

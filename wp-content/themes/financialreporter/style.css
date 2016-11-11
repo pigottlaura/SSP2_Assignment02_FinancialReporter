@@ -63,6 +63,10 @@ form input[type="submit"] {
     margin-left: 20px;
 }
 
+table {
+    width: 100%;
+}
+
 .hidden {
     display: none;
 }
