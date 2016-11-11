@@ -14,7 +14,7 @@ CREATE TABLE expense (
 	receipt VARCHAR(40),
 	cost DECIMAL(8, 2) NOT NULL,
 	description TEXT NOT NULL,
-	approved BOOLEAN DEFAULT FALSE,
+	approved VARCHAR(10) DEFAULT "Pending",
 	date_submitted TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	date_approved TIMESTAMP,
 	CONSTRAINT expense_employee_fk FOREIGN KEY(employee_id) REFERENCES wp_users(id),

@@ -96,11 +96,6 @@
                         foreach ($expenses as $key => $expense){
                             // Setting up values
                             $expenseDate = date_create($expense->date_submitted);
-                            if($expense->date_approved == null){
-                                $expenseApproved = "Pending";
-                            } else {
-                                $expenseApproved = $expense->approved == 1 ? "Yes" : "No";
-                            }
 
                             // Creating Table Row
                             echo "<tr>";
@@ -115,8 +110,8 @@
                                 echo "<td><a href='" . $expense->receipt . "' target='_blank'>View</a></td>";
                             }
                             echo "<td>" . $expense->description . "</td>";
-                            echo "<td>" . $expenseApproved . "</td>";
-                            if($expenseApproved == "Pending"){
+                            echo "<td>" . $expense->approved . "</td>";
+                            if($expense->approved == "Pending"){
                                 echo "<td><a href='./?action=removeExpense&expenseId=" . $expense->id . "'>Remove</a></td>";
                             } else {
                                 echo "<td>&nbsp;</td>";
