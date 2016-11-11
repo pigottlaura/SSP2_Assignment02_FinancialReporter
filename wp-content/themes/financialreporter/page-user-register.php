@@ -10,7 +10,8 @@
                 "user_login" => $_POST["username"],
                 "user_pass" => null,
                 "display_name" => $_POST["first_name"] . " " . $_POST["last_name"],
-                "user_pass" => $_POST["password"]
+                "user_pass" => $_POST["password"],
+                "user_email" => $_POST["email"]
             );
 
             $userId = wp_insert_user($userData);
@@ -21,7 +22,9 @@
 
                 wp_set_current_user($userId);
                 wp_set_auth_cookie($userId);
-                // wp_mail();
+
+                wp_new_user_notification($userId);
+
                 wp_redirect("/ssp2/assignment02/expenses");
             }
         }
@@ -57,6 +60,9 @@
                     </label>
                     <label>Password
                         <input type="password" name="password">
+                    </label>
+                    <label>Email
+                        <input type="email" name="email">
                     </label>
                     <input type="submit" value="Register as an Employee">
                 </form>
