@@ -22,4 +22,13 @@
         }
         return $usersRole;
     }
+
+    function validateData($data, $options){
+        $result = (object) array(
+            "dataValidated" => false,
+            "errors" => array()
+        );
+
+        return $result;
+    }
 ?>
