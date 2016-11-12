@@ -31,8 +31,8 @@
                 if(isset($_GET["expenseId"])){
                     $wpdb->delete(
                         "expense",
-                        array("id" => $_GET["expenseId"], "approved" => 0),
-                        array("%d", "%d")
+                        array("id" => $_GET["expenseId"], "status" => "Pending"),
+                        array("%d", "%s")
                     );
                     wp_redirect("./");
                 }
@@ -62,7 +62,7 @@
                 </select>
             </label>
             <label>Cost (€)
-                <input type="number" name="cost" min="0" required>
+                <input type="number" name="cost" min="0" step="0.01" required>
             </label>
             <label class="fullWidth">Attach Receipt
                 <input type="file" name="receipt">
@@ -97,7 +97,7 @@
                             $orderBy = "date_submitted";
                             $order = "asc";
                         }
-                        $expenses = $wpdb->get_results("SELECT expense.*, expense_category.name as 'category_name' FROM expense LEFT JOIN expense_category ON expense.category = expense_category.id ORDER BY " . $orderBy . " " . $order);
+                        $expenses = $wpdb->get_results("SELECT expense.*, expense_category.name as 'category_name' FROM expense LEFT JOIN expense_category ON expense.category = expense_category.id WHERE expense.employee_id = " . get_current_user_id() . " ORDER BY " . $orderBy . " " . $order);
 
 
                         if(count($expenses) > 0){

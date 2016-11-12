@@ -9,7 +9,7 @@ CREATE TABLE expense_category (
 
 CREATE TABLE expense (
 	id INT(10) AUTO_INCREMENT,
-	employee_id INT(20) NOT NULL,
+	employee_id BIGINT(20) UNSIGNED NOT NULL,
 	category INT(10) NOT NULL,
 	receipt VARCHAR(40),
 	cost DECIMAL(8, 2) NOT NULL,
