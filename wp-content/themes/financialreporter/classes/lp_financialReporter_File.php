@@ -3,6 +3,8 @@
         private static $allowedFiletypes = array("image/jpeg", "image/png");
 
         function __construct(){
+            // Not allowing this class to be instantiated
+            throw new Exception("Cannot instantiate this class. Please use the static methods provided instead.");
         }
 
         public static function saveFile($file) {

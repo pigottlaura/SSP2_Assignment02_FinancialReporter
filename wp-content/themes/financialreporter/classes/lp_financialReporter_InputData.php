@@ -1,6 +1,8 @@
 <?php
     class lp_financialReporter_InputData {
         function __construct(){
+            // Not allowing this class to be instantiated
+            throw new Exception("Cannot instantiate this class. Please use the static methods provided instead.");
         }
 
         // Validating input data
