@@ -1,9 +1,8 @@
 <?php
+    include_once("autoloader.php");
+
     // Adding theme support for menus
     add_theme_support('menus');
-
-    // Setting up any initial requirements i.e. databases
-    add_action("after_switch_theme", "lp_financialReporter_init");
 
     // Registering sidebar
     if(function_exists('register_sidebar')){
@@ -13,38 +12,8 @@
         ));
     }
 
-    // Adding in function to get user's role i.e. admin/subscriber
-    function get_user_role() {
-        global $wp_roles;
-        $usersRole ='';
-
-        foreach ($wp_roles->role_names as $role => $name ) {
-            if (current_user_can( $role ) ){
-                $usersRole = $role;
-            }
-        }
-        return $usersRole;
-    }
-
-    // Getting the name of a category based on it's id
-    function lp_get_category($categoryId){
-        global $wpdb;
-        return $wpdb->get_var("SELECT name FROM lp_financialReporter_expense_category WHERE id=" . $categoryId);
-    }
-
-    function lp_get_employee_name($employeeId){
-        global $wpdb;
-        return $wpdb->get_var("SELECT display_name FROM wp_users WHERE id=" . $employeeId);
-    }
-    // Validating input data
-    function lp_validate_data($data, $options){
-        $result = (object) array(
-            "dataValidated" => false,
-            "errors" => array()
-        );
-
-        return $result;
-    }
+    // Setting up any initial requirements i.e. databases
+    add_action("after_switch_theme", "lp_financialReporter_init");
 
     function lp_financialReporter_init() {
         global $wpdb;

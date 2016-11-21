@@ -2,43 +2,17 @@
 <?php
     // Only logged in subscribers can access this page
     if(is_user_logged_in()) {
-        if(get_user_role() != "subscriber"){
+        if(lp_financialReporter_User::getUserRole() == "subscriber") {
+            if (isset($_GET["action"])) {
+                lp_financialReporter_User::attemptAction($_GET["action"]);
+            }
+        } else {
+            // This user does not have the right role to access this page
             wp_redirect("/ssp2/assignment02/expenses");
         }
     } else {
+        // This user is not logged in
         wp_redirect("/ssp2/assignment02/user-login");
-    }
-
-    if(isset($_GET["action"])){
-        global $wpdb;
-
-        switch($_GET["action"]) {
-            // Adding an expense
-            case "addExpense": {
-                if (count($_POST) > 0) {
-                    if (lp_validate_data($_POST, array())) {
-                        $wpdb->query($wpdb->prepare(
-                            "INSERT INTO lp_financialReporter_expense (employee_id, category, cost, description) VALUES(%d, %d, %d, %s)",
-                            array(get_current_user_id(), number_format($_POST['category'], 0), number_format($_POST['cost'], 2), $_POST['description'])
-                        ));
-                        wp_redirect("./");
-                    }
-                }
-                break;
-            }
-            // Allowing employees to remove expenses that have not yet been approved
-            case "removeExpense": {
-                if(isset($_GET["expenseId"])){
-                    $wpdb->delete(
-                        "lp_financialReporter_expense",
-                        array("id" => $_GET["expenseId"], "status" => "Pending"),
-                        array("%d", "%s")
-                    );
-                    wp_redirect("./");
-                }
-                break;
-            }
-        }
     }
 ?>
 <?php get_header(); ?>
@@ -51,10 +25,7 @@
                 <select name="category" required>
                     <option selected disabled class="hidden"></option>
                     <?php
-                        // Loading Categories in from Database
-                        global $wpdb;
-                        $categories = $wpdb->get_results("SELECT * FROM lp_financialReporter_expense_category");
-
+                        $categories = lp_financialReporter_Expense::getAllCategories();
                         foreach($categories as $key => $category){
                             echo "<option value='" . $category->id . "'>" . $category->name . "</option>";
                         }
@@ -89,27 +60,17 @@
                         <th>Action</th>
                     </tr>
                     <?php
-                        global $wpdb;
-                        if(isset($_COOKIE["orderBy"]) && isset($_COOKIE["order"])){
-                            $orderBy = $_COOKIE["orderBy"];
-                            $order = $_COOKIE["order"];
-                        } else {
-                            $orderBy = "date_submitted";
-                            $order = "asc";
-                        }
-                        $expenses = $wpdb->get_results("SELECT lp_financialReporter_expense.*, lp_financialReporter_expense_category.name as 'category_name' FROM lp_financialReporter_expense LEFT JOIN lp_financialReporter_expense_category ON lp_financialReporter_expense.category = lp_financialReporter_expense_category.id WHERE lp_financialReporter_expense.employee_id = " . get_current_user_id() . " ORDER BY " . $orderBy . " " . $order);
-
-
-                        if(count($expenses) > 0){
-                            foreach ($expenses as $key => $expense){
+                        $userExpenses = lp_financialReporter_Expense::getAllExpensesForCurrentUser();
+                        if(count($userExpenses) > 0){
+                            foreach ($userExpenses as $key => $expense){
                                 // Setting up values
                                 $expenseDate = date_create($expense->date_submitted);
 
                                 // Creating Table Row
                                 echo "<tr>";
                                 echo "<td>#" . $expense->id . "</td>";
-                                echo "<td>" . date_format($expenseDate, "jS M Y @ G:ia") . "</td>";
-                                echo "<td>" . lp_get_category($expense->category) . "</td>";
+                                echo "<td>" . date_format($expenseDate, lp_financialReporter_Expense::$expenseDateFormat) . "</td>";
+                                echo "<td>" . $expense->category_name . "</td>";
                                 echo "<td>&euro;" . $expense->cost . "</td>";
                                 if($expense->receipt == null){
                                     echo "<td>None</td>";

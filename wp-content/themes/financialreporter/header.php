@@ -12,7 +12,7 @@
         <script src="<?php echo get_bloginfo('template_url'); ?>/script.js"></script>
         <?php wp_head(); ?>
     </head>
-    <body class="container-fluid<?php if(is_user_logged_in()){ echo ' wp-logged-in wp-role-' . get_user_role(); } ?>">
+    <body class="container-fluid<?php if(is_user_logged_in()){ echo ' wp-logged-in wp-role-' . lp_financialReporter_User::getUserRole(); } ?>">
         <?php
             if(is_user_logged_in()){
                 show_admin_bar(false);
@@ -20,7 +20,7 @@
                 echo "<div class='row' id='customAdminBar'>";
                 echo "<div class='col-xs-12'>";
 
-                $userRole = get_user_role();
+                $userRole = lp_financialReporter_User::getUserRole();
                 $currentUser = wp_get_current_user();
                 if($userRole == "subscriber"){
 

@@ -2,26 +2,9 @@
 <?php
     // Only logged in administrators can access this page
     if(is_user_logged_in()) {
-        if(get_user_role() == "administrator") {
-            // Allow this user to complete the following actions
+        if(lp_financialReporter_User::getUserRole() == "administrator") {
             if (isset($_GET["action"])) {
-                global $wpdb;
-
-                switch ($_GET["action"]) {
-                    case "expenseApproval": {
-                        if (isset($_GET["expenseId"]) && isset($_GET["decision"])) {
-                            $expenseDecision = $_GET["decision"] == 0 ? "Rejected" : "Approved";
-                            $wpdb->update("lp_financialReporter_expense",
-                                array("status" => $expenseDecision, "decision_date" => date("Y-m-d H:i:s")),
-                                array("id" => $_GET["expenseId"]),
-                                array("%s", "%s"),
-                                array("%d")
-                            );
-                            wp_redirect("./");
-                        }
-                        break;
-                    }
-                }
+                lp_financialReporter_User::attemptAction($_GET["action"]);
             }
         } else{
             wp_redirect("/ssp2/assignment02/expenses");
@@ -59,18 +42,9 @@
                         <th>Action</th>
                     </tr>
                     <?php
-                        global $wpdb;
-                        if(isset($_COOKIE["orderBy"]) && isset($_COOKIE["order"])){
-                            $orderBy = $_COOKIE["orderBy"];
-                            $order = $_COOKIE["order"];
-                        } else {
-                            $orderBy = "date_submitted";
-                            $order = "asc";
-                        }
-                        $expenses = $wpdb->get_results("SELECT lp_financialReporter_expense.*, wp_users.display_name, lp_financialReporter_expense_category.name as 'category_name' FROM lp_financialReporter_expense LEFT JOIN wp_users ON lp_financialReporter_expense.employee_id = wp_users.id LEFT JOIN lp_financialReporter_expense_category ON lp_financialReporter_expense.category = lp_financialReporter_expense_category.id ORDER BY " . $orderBy . " " . $order);
-
-                        if(count($expenses) > 0) {
-                            foreach($expenses as $key => $expense){
+                        $allExpenses = lp_financialReporter_Expense::getAllExpenses();
+                        if(count($allExpenses) > 0) {
+                            foreach($allExpenses as $key => $expense){
                                 // Setting up values
                                 $expenseDate = date_create($expense->date_submitted);
 
@@ -79,7 +53,7 @@
                                 echo "<td>#" . $expense->id . "</td>";
                                 echo "<td>#" . $expense->employee_id . "</td>";
                                 echo "<td>" . $expense->display_name . "</td>";
-                                echo "<td>" . date_format($expenseDate, "jS M Y @ G:ia") . "</td>";
+                                echo "<td>" . date_format($expenseDate, lp_financialReporter_Expense::$expenseDateFormat) . "</td>";
                                 echo "<td>" . $expense->category_name . "</td>";
                                 echo "<td>&euro;" . $expense->cost . "</td>";
                                 if($expense->receipt == null){
