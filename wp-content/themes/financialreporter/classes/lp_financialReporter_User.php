@@ -19,7 +19,7 @@
         public static function attemptAction($action){
             switch ($action) {
                 case "addExpense": {
-                    lp_financialReporter_Expense::addExpense($_POST);
+                    lp_financialReporter_Expense::addExpense($_POST, $_FILES);
                     break;
                 }
                 case "removeExpense": {

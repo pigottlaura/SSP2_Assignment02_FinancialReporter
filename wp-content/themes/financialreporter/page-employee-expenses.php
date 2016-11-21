@@ -20,7 +20,7 @@
 <div class="row">
     <div class="col-xs-3">
         <h3>Add an Expense</h3>
-        <form method="POST" action="./?action=addExpense">
+        <form method="POST" action="./?action=addExpense" enctype="multipart/form-data">
             <label>Category
                 <select name="category" required>
                     <option selected disabled class="hidden"></option>
@@ -87,7 +87,7 @@
                                 echo "</tr>";
                             }
                         } else {
-                            echo "<tr><td colspan='8'>You no previous expense claims</td></tr>";
+                            echo "<tr><td colspan='8'>You have no previous expense claims</td></tr>";
                         }
 
                     ?>

@@ -5,14 +5,27 @@
         function __construct() {
         }
 
-        public static function addExpense($expenseData){
+        public static function addExpense($expenseData, $files=null){
             if(lp_financialReporter_User::getUserRole() == "subscriber") {
                 if (count($expenseData) > 0) {
+                    $receiptPath = null;
+
+                    // Only works locally at the moment
+                    if(isset($files["receipt"]) && $_SERVER['SERVER_NAME'] == "localhost"){
+                        $saveFile = lp_financialReporter_File::saveFile($files["receipt"]);
+                        if(count($saveFile->errors) > 0){
+                        }
+                        if(isset($saveFile->filepath)) {
+                            $receiptPath = $saveFile->filepath;
+                        }
+                    }
+
                     if (lp_financialReporter_InputData::validateData($expenseData, array())) {
                         global $wpdb;
+                        $wpdb->show_errors(true);
                         $wpdb->query($wpdb->prepare(
-                            "INSERT INTO lp_financialReporter_expense (employee_id, category, cost, description) VALUES(%d, %d, %d, %s)",
-                            array(get_current_user_id(), number_format($expenseData['category'], 0), number_format($expenseData['cost'], 2), $expenseData['description'])
+                            "INSERT INTO lp_financialReporter_expense (employee_id, category, receipt, cost, description) VALUES(%d, %d, %s, %d, %s)",
+                            array(get_current_user_id(), number_format($expenseData['category'], 0), $receiptPath, number_format($expenseData['cost'], 2), $expenseData['description'])
                         ));
                     }
                 }
