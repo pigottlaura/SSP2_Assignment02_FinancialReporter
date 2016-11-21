@@ -30,8 +30,7 @@ form label, form input:not([type="checkbox"]), form select, form textarea {
     vertical-align: top;
 }
 form input:not([type="checkbox"]), form select, form textarea {
-    width: 60%;
-    float: right;
+    width: 100%;
 }
 form label {
     margin-bottom: 2%;
@@ -39,9 +38,6 @@ form label {
 p label {
     margin: initial !important;;
     width: initial !important;
-}
-form textarea {
-    width: 80%;
 }
 form select {
     height: 26px;

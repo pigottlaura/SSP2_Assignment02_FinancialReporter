@@ -24,11 +24,9 @@
                 $currentUser = wp_get_current_user();
                 if($userRole == "subscriber"){
                     echo "Welcome back " . $currentUser->display_name . "!";
-                    echo "<button><a href='/ssp2/assignment02/expenses?action=addExpense'>Add an Expense</a></button>";
-                    echo "<button><a href='/ssp2/assignment02/expenses?action=viewAll'>View my Expenses</a></button>";
                 } else if($userRole == "administrator"){
                     echo "Hello Admin " . $currentUser->display_name . "!";
-                    echo "<button><a href='/ssp2/assignment02/expenses?action=viewAll'>View all Expenses</a></button>";
+                    echo "<button><a href='/ssp2/assignment02/expense-categories'>View Expense Categories</a></button>";
                 }
 
                 echo "<button><a href='" . wp_logout_url(home_url()) . "'>Logout</a></button>";

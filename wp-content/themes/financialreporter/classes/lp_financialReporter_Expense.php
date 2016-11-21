@@ -100,5 +100,43 @@
             $categoryName = $wpdb->get_var("SELECT name FROM lp_financialReporter_expense_category WHERE id=" . $categoryId);
             return $categoryName;
         }
+
+        public static function categoryInUse($categoryId) {
+            global $wpdb;
+            $results = $wpdb->get_results("SELECT * FROM lp_financialReporter_expense WHERE category=" . $categoryId);
+            $categoryInUse = count($results) > 0 ? true : false;
+            return $categoryInUse;
+        }
+
+        public static function categoryExists($categoryName) {
+            global $wpdb;
+            $results = $wpdb->get_results("SELECT * FROM lp_financialReporter_expense_category WHERE name=" . $categoryName);
+            $categoryExists = count($results) > 0 ? true : false;
+            return $categoryExists;
+        }
+
+        public static function addCategory($categoryName){
+            if(lp_financialReporter_User::getUserRole() == "administrator") {
+                if (self::categoryExists($categoryName) == false) {
+                    echo "category does not already exist";
+                    global $wpdb;
+                    $wpdb->query($wpdb->prepare(
+                        "INSERT INTO lp_financialReporter_expense_category (name) VALUES(%s)",
+                        array($categoryName)
+                    ));
+                }
+            }
+            wp_redirect("./");
+        }
+
+        public static function removeCategory($categoryId) {
+            if(lp_financialReporter_User::getUserRole() == "administrator") {
+                if (self::categoryInUse($categoryId) == false) {
+                    global $wpdb;
+                    $wpdb->query("DELETE FROM lp_financialReporter_expense_category WHERE id=" . $categoryId);
+                }
+            }
+            wp_redirect("./");
+        }
     }
 ?>

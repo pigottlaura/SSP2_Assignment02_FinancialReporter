@@ -30,6 +30,14 @@
                     lp_financialReporter_Expense::makeDecisionOnExpense($_GET["expenseId"], $_GET["decision"]);
                     break;
                 }
+                case "addNewExpenseCategory": {
+                    lp_financialReporter_Expense::addCategory($_POST["categoryName"]);
+                    break;
+                }
+                case "removeExpenseCategory": {
+                    lp_financialReporter_Expense::removeCategory($_GET["categoryId"]);
+                    break;
+                }
             }
         }
 
