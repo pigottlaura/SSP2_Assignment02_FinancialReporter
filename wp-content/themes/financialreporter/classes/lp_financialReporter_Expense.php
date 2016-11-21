@@ -1,5 +1,7 @@
 <?php
     class lp_financialReporter_Expense {
+        // Creating a common date format, that will be used across employee and
+        // employer displays of expenses i.e. 21st Nov 2016 @ 20:39pm
         public static $expenseDateFormat = "jS M Y @ G:ia";
 
         function __construct() {
@@ -8,38 +10,83 @@
         }
 
         public static function addExpense($expenseData, $files=null){
+            // Ensuring this user is a subscriber i.e. employee
             if(lp_financialReporter_User::getUserRole() == "subscriber") {
+                // Checking that the expense data has been provided
                 if (count($expenseData) > 0) {
-                    $receiptPath = null;
-
-                    // Only works locally at the moment
-                    if(isset($files["receipt"]) && $_SERVER['SERVER_NAME'] == "localhost"){
-                        $saveFile = lp_financialReporter_File::saveFile($files["receipt"]);
-                        if(count($saveFile->errors) > 0){
-                        }
-                        if(isset($saveFile->filepath)) {
-                            $receiptPath = $saveFile->filepath;
-                        }
-                    }
-
+                    // Validating the data passed as part of the expense
                     if (lp_financialReporter_InputData::validateData($expenseData, array())) {
+                        // Sanitising the data passed as part of the expense
+                        $sanitisedData = lp_financialReporter_InputData::sanitiseData($expenseData);
+
+                        // Creating a default of null for the receipt path. This may remain
+                        // num if 1) no files were uploaded along with this request or
+                        // 2) the file fails to save to the server
+                        $receiptPath = null;
+
+                        // Only works locally at the moment (so checking if on localhost)
+                        // Checking if the files array contains a "receipt" paramater
+                        // i.e. which will reference the file the user has uploaded with the
+                        // expense claim
+                        if(isset($files["receipt"]) && $_SERVER['SERVER_NAME'] == "localhost"){
+                            // Attempting the save the file using the saveFile static method
+                            // of the lp_financialReporter_File class. Storing the result in a
+                            // temporary variable
+                            $saveFile = lp_financialReporter_File::saveFile($files["receipt"]);
+
+                            // Checking if any errors were returned from the saveFile attempt
+                            if(count($saveFile->errors) > 0){
+                                // Not currently doing anything with these errors
+                            }
+
+                            // Checking if a file path was returned from the saveFile attempt
+                            if(isset($saveFile->filepath)) {
+                                // If so, then storing it in the temporary receiptPath variable,
+                                // so that it can be passed to the database and stored in the receipt
+                                // column of the expense
+                                $receiptPath = $saveFile->filepath;
+                            }
+                        }
+
+                        // Accessing the global wpdb variable, to access the database
                         global $wpdb;
-                        $wpdb->show_errors(true);
+
+                        // If debug is on, then log all errors from the database (TESTING PURPOSES)
+                        if(CONF_DEBUG){
+                            $wpdb->show_errors(true);
+                        }
+
+                        // Inserting the new expense into the expense table, using a prepared statement.
+                        // Passing the category as an int (no decimal places), and the cost as a 2 decimal
+                        // float value.
                         $wpdb->query($wpdb->prepare(
                             "INSERT INTO lp_financialReporter_expense (employee_id, category, receipt, cost, description) VALUES(%d, %d, %s, %d, %s)",
-                            array(get_current_user_id(), number_format($expenseData['category'], 0), $receiptPath, number_format($expenseData['cost'], 2), $expenseData['description'])
+                            array(get_current_user_id(), number_format($sanitisedData['category'], 0), $receiptPath, number_format($sanitisedData['cost'], 2), $sanitisedData['description'])
                         ));
                     }
                 }
             }
+            // Redirecting the user to the current page (to remove all reference to the POST request,
+            // as well as any GET params that were passed as part of this process
             wp_redirect("./");
         }
 
+        // Allowing employees to remove expenses that have not yet been approved
         public static function removeExpense($expenseId){
+            
+            // Ensuring this user is a subscriber i.e. employee
             if(lp_financialReporter_User::getUserRole() == "subscriber") {
-                // Allowing employees to remove expenses that have not yet been approved
+
+                // Checking that the expenseId has infact been passed as a param
+                // to the query string
                 if (isset($expenseId)) {
+
+                    // Accessing the global wpdb variable, to access the database
                     global $wpdb;
+
+                    // Deleting this expense, double checking that not only does the
+                    // id match, but that the status is defiantly pending (as expenses
+                    // that have already been decided on cannot be deleted)
                     $wpdb->delete(
                         "lp_financialReporter_expense",
                         array("id" => $_GET["expenseId"], "status" => "Pending"),
@@ -47,14 +94,33 @@
                     );
                 }
             }
+            // Redirecting the user to the current page (to remove all reference to the POST request,
+            // as well as any GET params that were passed as part of this process
             wp_redirect("./");
         }
 
         public static function makeDecisionOnExpense($expenseId, $decision) {
+
+            // Ensuring this user is a administrator i.e. employer
             if(lp_financialReporter_User::getUserRole() == "administrator") {
+
+                // Ensuring that both the expense id and decision value were passed
+                // to the query string
                 if (isset($expenseId) && isset($decision)) {
+
+                    // Accessing the global wpdb variable, to access the database
                     global $wpdb;
-                    $expenseDecision = $_GET["decision"] == 0 ? "Rejected" : "Approved";
+
+                    // Determing the employer's decision on this expense, based on a
+                    // 0 or 1 value, passed as a param to the query string. The purpose
+                    // of this is so no other value could ever be passed, as the status
+                    // column of the expense table is of type ENUM, and can only accept
+                    // "Rejected", "Approved" or it's default of "Pending"
+                    $expenseDecision = $decision == 0 ? "Rejected" : "Approved";
+
+                    // Updating the expense's status and decision date, based on the
+                    // decising specified by the employer ie. Rejected or Approved, as
+                    // well as passing the current date/time as the decision date
                     $wpdb->update("lp_financialReporter_expense",
                         array("status" => $expenseDecision, "decision_date" => date("Y-m-d H:i:s")),
                         array("id" => $_GET["expenseId"]),
@@ -63,95 +129,195 @@
                     );
                 }
             }
+            // Redirecting the user to the current page (to remove all reference to the POST request,
+            // as well as any GET params that were passed as part of this process
             wp_redirect("./");
         }
 
         public static function getAllExpenses() {
+            // Initialising the result that will be returned to the caller
+            // before checking if this user has permissions to carry out this
+            // action or not, so that an empty array can be returned regardless
             $expenses = array();
+
+            // Ensuring this user is a administrator i.e. employer
             if(lp_financialReporter_User::getUserRole() == "administrator") {
+                // Accessing the global wpdb variable, to access the database
                 global $wpdb;
-                if (isset($_COOKIE["orderBy"]) && isset($_COOKIE["order"])) {
-                    $orderBy = $_COOKIE["orderBy"];
-                    $order = $_COOKIE["order"];
-                } else {
-                    $orderBy = "date_submitted";
-                    $order = "asc";
-                }
-                $expenses = $wpdb->get_results("SELECT lp_financialReporter_expense.*, wp_users.display_name, lp_financialReporter_expense_category.name as 'category_name' FROM lp_financialReporter_expense LEFT JOIN wp_users ON lp_financialReporter_expense.employee_id = wp_users.id LEFT JOIN lp_financialReporter_expense_category ON lp_financialReporter_expense.category = lp_financialReporter_expense_category.id ORDER BY " . $orderBy . " " . $order);
+
+                // Getting the sort order values from cookies, or defaults if no
+                // cookies were provided
+                $sortOrder = self::checkCookiesForSortOrder();
+
+                // Querying the expense database for all columns in the expense, as well as the
+                // category name (by completing a left join in the expense and expense_category
+                // tables, based on the category id of the expense matching with the id of a category
+                // in the expense_category table) and user's display name (by completing a left join
+                // on the wp_users table, based on the employee id of the expense mathcing with an id
+                // of a user). Ordering the resulting rows as specified by the values above (either
+                // Cookie's or defaults)
+                $expenses = $wpdb->get_results("SELECT lp_financialReporter_expense.*, wp_users.display_name, lp_financialReporter_expense_category.name as 'category_name' FROM lp_financialReporter_expense LEFT JOIN wp_users ON lp_financialReporter_expense.employee_id = wp_users.id LEFT JOIN lp_financialReporter_expense_category ON lp_financialReporter_expense.category = lp_financialReporter_expense_category.id ORDER BY " . $sortOrder->orderBy . " " . $sortOrder->order);
             }
+
+            // Returning the list of expenses to the caller
             return $expenses;
         }
 
         public static function getAllExpensesForCurrentUser() {
+            // Initialising the result that will be returned to the caller
+            // before checking if this user has permissions to carry out this
+            // action or not, so that an empty array can be returned regardless
             $expenses = array();
+
+            // Ensuring this user is a subscriber i.e. employee
             if(lp_financialReporter_User::getUserRole() == "subscriber") {
+
+                // Accessing the global wpdb variable, to access the database
                 global $wpdb;
-                if (isset($_COOKIE["orderBy"]) && isset($_COOKIE["order"])) {
-                    $orderBy = $_COOKIE["orderBy"];
-                    $order = $_COOKIE["order"];
-                } else {
-                    $orderBy = "date_submitted";
-                    $order = "asc";
-                }
-                $expenses = $wpdb->get_results("SELECT lp_financialReporter_expense.*, lp_financialReporter_expense_category.name as 'category_name' FROM lp_financialReporter_expense LEFT JOIN lp_financialReporter_expense_category ON lp_financialReporter_expense.category = lp_financialReporter_expense_category.id WHERE lp_financialReporter_expense.employee_id = " . get_current_user_id() . " ORDER BY " . $orderBy . " " . $order);
+
+                // Getting the sort order values from cookies, or defaults if no
+                // cookies were provided
+                $sortOrder = self::checkCookiesForSortOrder();
+
+                // Querying the expense database for all columns in the expense, as well as the
+                // category name (by completing a left join in the expense and expense_category
+                // tables, based on the category id of the expense matching with the id of a category
+                // in the expense_category table). Ordering the resulting rows as specified by the
+                // values above (either Cookie's or defaults)
+                $expenses = $wpdb->get_results("SELECT lp_financialReporter_expense.*, lp_financialReporter_expense_category.name as 'category_name' FROM lp_financialReporter_expense LEFT JOIN lp_financialReporter_expense_category ON lp_financialReporter_expense.category = lp_financialReporter_expense_category.id WHERE lp_financialReporter_expense.employee_id = " . get_current_user_id() . " ORDER BY " . $sortOrder->orderBy . " " . $sortOrder->order);
             }
+
+            // Returning the list of expenses to the caller
             return $expenses;
         }
 
-        private static function appendReceiptToExpense($expenseID, $receiptFile){
-
-        }
-
         public static function getAllCategories() {
-            // Loading Categories in from Database
+            // Accessing the global wpdb variable, to access the database
             global $wpdb;
+
+            // Querying the database for all categories in the expense_category table
             $categories = $wpdb->get_results("SELECT * FROM lp_financialReporter_expense_category");
+
+            // Returning the list of categories to the caller
             return $categories;
         }
 
         // Getting the name of a category based on it's id
         public static function getCategoryName($categoryId) {
+            // Accessing the global wpdb variable, to access the database
             global $wpdb;
+
+            // Getting the value of the category's name column, based on a query
+            // to the expense_category database, for the category with the same
+            // id as the one specified. Storing the result in a temporary variable
             $categoryName = $wpdb->get_var("SELECT name FROM lp_financialReporter_expense_category WHERE id=" . $categoryId);
+
+            // Returning the category name to the caller
             return $categoryName;
         }
 
         public static function categoryInUse($categoryId) {
+            // Accessing the global wpdb variable, to access the database
             global $wpdb;
+
+            // Querying the expense table for expenses which have their category
+            // set to the one specified. Storing the result in a temporary variable
             $results = $wpdb->get_results("SELECT * FROM lp_financialReporter_expense WHERE category=" . $categoryId);
+
+            // Determining whether or not the category is currently in use based the number
+            // of results from the database i.e. if there was more than 0, then the
+            // category is in use in at least one expense, otherwise it is not
             $categoryInUse = count($results) > 0 ? true : false;
+
+            // Returning the result to the caller
             return $categoryInUse;
         }
 
         public static function categoryExists($categoryName) {
+            // Accessing the global wpdb variable, to access the database
             global $wpdb;
+
+            // Querying the expense_category table for categories with the same name
+            // as the one specified. Storing the result in a temporary variable
             $results = $wpdb->get_results("SELECT * FROM lp_financialReporter_expense_category WHERE name=" . $categoryName);
+
+            // Determining whether or not the category already exists based the number
+            // of results from the database i.e. if there was more than 0, then the
+            // category already exists, otherwise it does not
             $categoryExists = count($results) > 0 ? true : false;
+
+            // Returning the result to the caller
             return $categoryExists;
         }
 
         public static function addCategory($categoryName){
+
+            // Ensuring this user is a administrator i.e. employer
             if(lp_financialReporter_User::getUserRole() == "administrator") {
+
+                // Checking that the category does not already exist
                 if (self::categoryExists($categoryName) == false) {
-                    echo "category does not already exist";
+
+                    // Accessing the global wpdb variable, to access the database
                     global $wpdb;
+
+                    // Adding the new category to the expense_category table,
+                    // using a prepared statement
                     $wpdb->query($wpdb->prepare(
                         "INSERT INTO lp_financialReporter_expense_category (name) VALUES(%s)",
                         array($categoryName)
                     ));
                 }
             }
+            // Redirecting the user to the current page (to remove all reference to the POST request,
+            // as well as any GET params that were passed as part of this process
             wp_redirect("./");
         }
 
         public static function removeCategory($categoryId) {
+
+            // Ensuring this user is a administrator i.e. employer
             if(lp_financialReporter_User::getUserRole() == "administrator") {
+
+                // Checking that this category is not currently in use (if it is, then
+                // it can't be deleted
                 if (self::categoryInUse($categoryId) == false) {
+
+                    // Accessing the global wpdb variable, to access the database
                     global $wpdb;
-                    $wpdb->query("DELETE FROM lp_financialReporter_expense_category WHERE id=" . $categoryId);
+
+                    // Deleting the category from the expense_category database
+                    $wpdb->delete(
+                        "lp_financialReporter_expense_category",
+                        array("id" => $categoryId),
+                        array("%d")
+                    );
                 }
             }
+            // Redirecting the user to the current page (to remove all reference to the POST request,
+            // as well as any GET params that were passed as part of this process
             wp_redirect("./");
+        }
+
+        private function checkCookiesForSortOrder() {
+            // Creating an empty object to store the resulting values
+            $result = (object) array();
+
+            // Checking if there are cookies set to specify column and order
+            // by which the results should be sorted.
+            if (isset($_COOKIE["orderBy"]) && isset($_COOKIE["order"])) {
+                // Using the values stored in the cookie's for column and order
+                $result->orderBy = $_COOKIE["orderBy"];
+                $result->order = $_COOKIE["order"];
+            } else {
+                // Using the default values for column and order, as no cookies were
+                // provided
+                $result->orderBy = "date_submitted";
+                $result->order = "asc";
+            }
+
+            // Returning the result to the caller
+            return $result;
         }
     }
 ?>
