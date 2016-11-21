@@ -23,7 +23,6 @@
                 $userRole = lp_financialReporter_User::getUserRole();
                 $currentUser = wp_get_current_user();
                 if($userRole == "subscriber"){
-
                     echo "Welcome back " . $currentUser->display_name . "!";
                     echo "<button><a href='/ssp2/assignment02/expenses?action=addExpense'>Add an Expense</a></button>";
                     echo "<button><a href='/ssp2/assignment02/expenses?action=viewAll'>View my Expenses</a></button>";

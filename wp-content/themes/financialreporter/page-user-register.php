@@ -6,27 +6,7 @@
     } else {
         // If the user has submitted the registration form
         if(count($_POST) > 0){
-            $userData = array(
-                "user_login" => $_POST["username"],
-                "user_pass" => null,
-                "display_name" => $_POST["first_name"] . " " . $_POST["last_name"],
-                "user_pass" => $_POST["password"],
-                "user_email" => $_POST["email"]
-            );
-
-            $userId = wp_insert_user($userData);
-
-            if(!is_wp_error($userId)){
-                update_user_meta($userId, "first_name", $_POST["first_name"]);
-                update_user_meta($userId, "last_name", $_POST["last_name"]);
-
-                wp_set_current_user($userId);
-                wp_set_auth_cookie($userId);
-
-                wp_new_user_notification($userId);
-
-                wp_redirect("/ssp2/assignment02/expenses");
-            }
+            lp_financialReporter_User::registerNewUser($_POST);
         }
     }
 ?>
