@@ -299,7 +299,7 @@
             wp_redirect("./");
         }
 
-        private function checkCookiesForSortOrder() {
+        private static function checkCookiesForSortOrder() {
             // Creating an empty object to store the resulting values
             $result = (object) array();
 
