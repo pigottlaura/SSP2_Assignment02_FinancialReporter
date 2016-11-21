@@ -18,6 +18,8 @@
  * @package WordPress
  */
 
+define('CONF_DEBUG', true);
+
 // ** MySQL settings ** //
 if($_SERVER['SERVER_NAME'] == "localhost"){
     /** The name of the database for WordPress */
