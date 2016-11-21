@@ -38,7 +38,7 @@
                         <th id="cost" class="orderHeading">Cost</th>
                         <th id="receipt" class="orderHeading">Receipt</th>
                         <th id="description" class="orderHeading">Description</th>
-                        <th id="approved" class="orderHeading">Approved</th>
+                        <th id="status" class="orderHeading">Status</th>
                         <th>Action</th>
                     </tr>
                     <?php
