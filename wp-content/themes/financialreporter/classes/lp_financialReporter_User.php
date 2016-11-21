@@ -1,5 +1,6 @@
 <?php
     class lp_financialReporter_User {
+
         function __construct(){
             // Not allowing this class to be instantiated
             throw new Exception("Cannot instantiate this class. Please use the static methods provided instead.");
@@ -7,6 +8,7 @@
 
         // Get user's role i.e. admin/subscriber
         public static function getUserRole() {
+
             // Accessing the global "wp_roles" variable
             global $wp_roles;
 
@@ -28,6 +30,9 @@
 
         // Attempting to call an action based on the action param passed to the query string of the url
         public static function attemptAction($action){
+
+            // Checking which action was specified, and calling the relevant method of the
+            // relevant class, to complete the action if a match is found
             switch ($action) {
                 case "addExpense": {
                     lp_financialReporter_Expense::addExpense($_POST, $_FILES);
@@ -54,8 +59,10 @@
 
         // Registering a new user
         public static function registerNewUser($registrationData) {
+
             // Checking if the data provied is valid, based on the options specified
             if(lp_financialReporter_InputData::validateData($registrationData, array())) {
+
                 // Sanitising the data provided
                 $sanitisedData = lp_financialReporter_InputData::sanitiseData($registrationData);
 
@@ -71,8 +78,13 @@
                 // Creating a new user, and storing the resulting ID in a temporary variable
                 $userId = wp_insert_user($userData);
 
-                // If there was no error returned from the insert, then log this user in
-                if(!is_wp_error($userId)){
+
+                // Checking if the attempt to create the user resulted in any errors
+                if(is_wp_error($userId)) {
+                    // TO DO
+                } else {
+                    // If there was no error returned from the insert, then log this user in
+
                     // Setting the user's meta data for their first and last name
                     update_user_meta($userId, "first_name", $sanitisedData["first_name"]);
                     update_user_meta($userId, "last_name", $sanitisedData["last_name"]);
