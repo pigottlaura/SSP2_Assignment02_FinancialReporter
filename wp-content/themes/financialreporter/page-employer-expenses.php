@@ -11,7 +11,7 @@
                     case "expenseApproval": {
                         if (isset($_GET["expenseId"]) && isset($_GET["decision"])) {
                             $expenseDecision = $_GET["decision"] == 0 ? "Rejected" : "Approved";
-                            $wpdb->update("expense",
+                            $wpdb->update("lp_financialReporter_expense",
                                 array("status" => $expenseDecision, "decision_date" => date("Y-m-d H:i:s")),
                                 array("id" => $_GET["expenseId"]),
                                 array("%s", "%s"),
@@ -67,7 +67,7 @@
                             $orderBy = "date_submitted";
                             $order = "asc";
                         }
-                        $expenses = $wpdb->get_results("SELECT expense.*, wp_users.display_name, expense_category.name as 'category_name' FROM expense LEFT JOIN wp_users ON expense.employee_id = wp_users.id LEFT JOIN expense_category ON expense.category = expense_category.id ORDER BY " . $orderBy . " " . $order);
+                        $expenses = $wpdb->get_results("SELECT lp_financialReporter_expense.*, wp_users.display_name, lp_financialReporter_expense_category.name as 'category_name' FROM lp_financialReporter_expense LEFT JOIN wp_users ON lp_financialReporter_expense.employee_id = wp_users.id LEFT JOIN lp_financialReporter_expense_category ON lp_financialReporter_expense.category = lp_financialReporter_expense_category.id ORDER BY " . $orderBy . " " . $order);
 
                         if(count($expenses) > 0) {
                             foreach($expenses as $key => $expense){

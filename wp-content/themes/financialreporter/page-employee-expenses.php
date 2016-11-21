@@ -18,7 +18,7 @@
                 if (count($_POST) > 0) {
                     if (lp_validate_data($_POST, array())) {
                         $wpdb->query($wpdb->prepare(
-                            "INSERT INTO expense (employee_id, category, cost, description) VALUES(%d, %d, %d, %s)",
+                            "INSERT INTO lp_financialReporter_expense (employee_id, category, cost, description) VALUES(%d, %d, %d, %s)",
                             array(get_current_user_id(), number_format($_POST['category'], 0), number_format($_POST['cost'], 2), $_POST['description'])
                         ));
                         wp_redirect("./");
@@ -30,7 +30,7 @@
             case "removeExpense": {
                 if(isset($_GET["expenseId"])){
                     $wpdb->delete(
-                        "expense",
+                        "lp_financialReporter_expense",
                         array("id" => $_GET["expenseId"], "status" => "Pending"),
                         array("%d", "%s")
                     );
@@ -53,7 +53,7 @@
                     <?php
                         // Loading Categories in from Database
                         global $wpdb;
-                        $categories = $wpdb->get_results("SELECT * FROM expense_category");
+                        $categories = $wpdb->get_results("SELECT * FROM lp_financialReporter_expense_category");
 
                         foreach($categories as $key => $category){
                             echo "<option value='" . $category->id . "'>" . $category->name . "</option>";
@@ -97,7 +97,7 @@
                             $orderBy = "date_submitted";
                             $order = "asc";
                         }
-                        $expenses = $wpdb->get_results("SELECT expense.*, expense_category.name as 'category_name' FROM expense LEFT JOIN expense_category ON expense.category = expense_category.id WHERE expense.employee_id = " . get_current_user_id() . " ORDER BY " . $orderBy . " " . $order);
+                        $expenses = $wpdb->get_results("SELECT lp_financialReporter_expense.*, lp_financialReporter_expense_category.name as 'category_name' FROM lp_financialReporter_expense LEFT JOIN lp_financialReporter_expense_category ON lp_financialReporter_expense.category = lp_financialReporter_expense_category.id WHERE lp_financialReporter_expense.employee_id = " . get_current_user_id() . " ORDER BY " . $orderBy . " " . $order);
 
 
                         if(count($expenses) > 0){

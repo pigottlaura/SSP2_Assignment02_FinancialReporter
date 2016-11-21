@@ -29,7 +29,7 @@
     // Getting the name of a category based on it's id
     function lp_get_category($categoryId){
         global $wpdb;
-        return $wpdb->get_var("SELECT name FROM expense_category WHERE id=" . $categoryId);
+        return $wpdb->get_var("SELECT name FROM lp_financialReporter_expense_category WHERE id=" . $categoryId);
     }
 
     function lp_get_employee_name($employeeId){
