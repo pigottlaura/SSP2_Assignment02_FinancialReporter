@@ -88,13 +88,107 @@
     // Adding the filter
     add_filter('wp_handle_upload_prefilter', 'lp_financialReporter_useCustomFilename' );
 
+
+    function lp_financialReporter_createPages(){
+        $allPageIds = array();
+        $excludePageIds = array();
+        $requiredPages = array(
+            (object) array(
+                "pageAttributes" => (object) array(
+                    "post_title" => "Employee Expenses",
+                    "post_name" => "employee-expenses"
+                ),
+                "excludeFromMenu" => true
+            ),
+            (object) array(
+                "pageAttributes" => (object) array(
+                    "post_title" => "Employer Expenses",
+                    "post_name" => "employer-expenses"
+                ),
+                "excludeFromMenu" => true
+            ),
+            (object) array(
+                "pageAttributes" => (object) array(
+                    "post_title" => "Expense Categories",
+                    "post_name" => "expense-categories"
+                ),
+                "excludeFromMenu" => true
+            ),
+            (object) array(
+                "pageAttributes" => (object) array(
+                    "post_title" => "Expenses",
+                    "post_name" => "expenses"
+                ),
+                "excludeFromMenu" => false
+            ),
+            (object) array(
+                "pageAttributes" => (object) array(
+                    "post_title" => "Login",
+                    "post_name" => "user-login"
+                ),
+                "excludeFromMenu" => true
+            ),
+            (object) array(
+                "pageAttributes" => (object) array(
+                    "post_title" => "Register",
+                    "post_name" => "user-register"
+                ),
+                "excludeFromMenu" => true
+            )
+        );
+
+        foreach($requiredPages as $key => $page) {
+            // Setting all required pages to be of type "page" and their
+            // status to be "publish"
+            $page->pageAttributes->post_type = "page";
+            $page->pageAttributes->post_status = "publish";
+
+            $pageId = wp_insert_post($page->pageAttributes);
+
+            array_push($allPageIds, $pageId);
+
+            if ($page->excludeFromMenu) {
+                array_push($excludePageIds, $pageId);
+            }
+        }
+
+        update_option("lp_financialReporter_allPages", implode(",", $allPageIds));
+        update_option("lp_financialReporter_excludePagesFromMenu", implode(",", $excludePageIds));
+
+    }
+
+    function lp_financialReporter_excludeFromMenu($args) {
+        $args['exclude'] = get_option("lp_financialReporter_excludePagesFromMenu");
+        return $args;
+    }
+    add_filter("wp_page_menu_args", "lp_financialReporter_excludeFromMenu");
+
+
+    function lp_financialReporter_checkPages(){
+        if(get_option("lp_financialReporter_allPages") == false){
+            lp_financialReporter_createPages();
+        }
+    }
     // Setting up any initial requirements i.e. databases when the theme is "activated"
-    function lp_financialReporter_init() {
+    function lp_financialReporter_activated() {
         // Checking that all database tables required by this theme exist
         lp_financialReporter_check_tables();
+
+        lp_financialReporter_checkPages();
     }
     // Adding the action
-    add_action("after_switch_theme", "lp_financialReporter_init");
+    add_action("after_switch_theme", "lp_financialReporter_activated");
+
+    function lp_financialReporter_deactivated(){
+        $themePageIds = get_option("lp_financialReporter_allPages");
+        $themePages = explode(",", $themePageIds);
+        foreach($themePages as $key => $pageId) {
+            wp_delete_post($pageId, true);
+        }
+        delete_option("lp_financialReporter_allPages");
+        delete_option("lp_financialReporter_excludePagesFromMenu");
+    }
+    add_action("switch_theme", "lp_financialReporter_deactivated");
 
     // If a user is being deleted, then removing the expense they had claimed from
     // the database
