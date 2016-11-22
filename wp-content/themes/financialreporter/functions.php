@@ -95,4 +95,12 @@
     }
     // Adding the action
     add_action("after_switch_theme", "lp_financialReporter_init");
+
+    // If a user is being deleted, then removing the expense they had claimed from
+    // the database
+    function lp_financialReporter_onDeleteUser($userId){
+        global $wpdb;
+        $wpdb->query("DELETE FROM lp_financialReporter_expense WHERE employee_id=" . $userId);
+    }
+    add_action("delete_user", "lp_financialReporter_onDeleteUser");
 ?>
