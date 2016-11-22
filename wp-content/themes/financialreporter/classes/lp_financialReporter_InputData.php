@@ -33,6 +33,13 @@
                         array_push($result->errors, $prettyInputName . " must contain a valid email address");
                     }
                 }
+
+                if(isset($options["number"]) && in_array($inputName, $options["number"])){
+                    if(is_numeric($inputValue) == false){
+                        $result->dataValidated = false;
+                        array_push($result->errors, $prettyInputName . " must contain a valid number");
+                    }
+                }
             }
 
             return $result;

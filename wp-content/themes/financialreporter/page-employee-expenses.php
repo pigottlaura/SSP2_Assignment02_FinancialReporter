@@ -4,7 +4,7 @@
     if(is_user_logged_in()) {
         if(lp_financialReporter_User::getUserRole() == "subscriber") {
             if (isset($_GET["action"])) {
-                lp_financialReporter_User::attemptAction($_GET["action"]);
+                $attemptedAction = lp_financialReporter_User::attemptAction($_GET["action"]);
             }
         } else {
             // This user does not have the right role to access this page
@@ -20,6 +20,16 @@
 <div class="row">
     <div class="col-xs-3">
         <h3>Add an Expense</h3>
+        <?php
+            if(isset($attemptedAction) && $attemptedAction->action == "addExpense"){
+                if(count($attemptedAction->errors) > 0){
+                    echo "<strong>Error:</strong> ";
+                    foreach($attemptedAction->errors as $key => $error){
+                        echo $error . "<br>";
+                    }
+                }
+            }
+        ?>
         <form method="POST" action="./?action=addExpense" enctype="multipart/form-data">
             <label>Category
                 <select name="category" required>

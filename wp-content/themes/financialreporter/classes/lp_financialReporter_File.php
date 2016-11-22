@@ -8,14 +8,15 @@
         }
 
         public static function saveFile($file) {
+            $response = (object) array(
+                "successful" => false,
+                "errors" => array(),
+                "filepath" => null
+            );
+
             if (function_exists("wp_handle_upload") == false) {
                 require_once(ABSPATH . "wp-admin/includes/file.php");
             }
-
-            $response = (object) array(
-                "filepath" => null,
-                "errors" => array()
-            );
 
 
             $result = wp_handle_upload($file, array('test_form' => false));
@@ -25,6 +26,7 @@
             }
             if(isset($result["url"])){
                 $response->filepath = $result["url"];
+                $response->successful = true;
             }
 
             /*

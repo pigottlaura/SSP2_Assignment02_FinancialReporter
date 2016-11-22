@@ -10,12 +10,27 @@
         }
 
         public static function addExpense($expenseData, $files=null){
+            $response = (object) array(
+                "successful" => false,
+                "errors" => array()
+            );
+
             // Ensuring this user is a subscriber i.e. employee
             if(lp_financialReporter_User::getUserRole() == "subscriber") {
                 // Checking that the expense data has been provided
                 if (count($expenseData) > 0) {
+
+                    $dataValidated = lp_financialReporter_InputData::validateData($expenseData, array(
+                        "required" => array("category", "cost", "description"),
+                        "number" => array("category", "cost")
+                    ));
+
+                    foreach($dataValidated->errors as $key => $error){
+                        array_push($response->errors, $error);
+                    }
+
                     // Validating the data passed as part of the expense
-                    if (lp_financialReporter_InputData::validateData($expenseData, array())) {
+                    if ($dataValidated->dataValidated) {
                         // Sanitising the data passed as part of the expense
                         $sanitisedData = lp_financialReporter_InputData::sanitiseData($expenseData);
 
@@ -36,7 +51,10 @@
 
                             // Checking if any errors were returned from the saveFile attempt
                             if(count($saveFile->errors) > 0){
-                                // Not currently doing anything with these errors
+                                foreach ($saveFile->errors as $key => $error){
+                                    array_push($response->errors, $error);
+                                    $response->successful = false;
+                                }
                             }
 
                             // Checking if a file path was returned from the saveFile attempt
@@ -63,12 +81,16 @@
                             "INSERT INTO lp_financialReporter_expense (employee_id, category, receipt, cost, description) VALUES(%d, %d, %s, %d, %s)",
                             array(get_current_user_id(), number_format($sanitisedData['category'], 0), $receiptPath, number_format($sanitisedData['cost'], 2), $sanitisedData['description'])
                         ));
+
+                        $response->successful *= true;
                     }
                 }
             }
+
+            return $response;
             // Redirecting the user to the current page (to remove all reference to the POST request,
             // as well as any GET params that were passed as part of this process
-            wp_redirect("./");
+            //wp_redirect("./");
         }
 
         // Allowing employees to remove expenses that have not yet been approved

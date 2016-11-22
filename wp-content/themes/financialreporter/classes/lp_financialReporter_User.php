@@ -30,12 +30,16 @@
 
         // Attempting to call an action based on the action param passed to the query string of the url
         public static function attemptAction($action){
+            $response = (object) array(
+                "successful" => false,
+                "errors" => array()
+            );
 
             // Checking which action was specified, and calling the relevant method of the
             // relevant class, to complete the action if a match is found
             switch ($action) {
                 case "addExpense": {
-                    lp_financialReporter_Expense::addExpense($_POST, $_FILES);
+                    $response = lp_financialReporter_Expense::addExpense($_POST, $_FILES);
                     break;
                 }
                 case "removeExpense": {
@@ -55,6 +59,9 @@
                     break;
                 }
             }
+
+            $response->action = $action;
+            return $response;
         }
 
         // Registering a new user
@@ -89,6 +96,10 @@
                     "display_name" => $sanitisedData["first_name"] . " " . $sanitisedData["last_name"],
                     "user_email" => $sanitisedData["email"]
                 );
+
+                if($_SERVER['SERVER_NAME'] == "localhost") {
+                    $userData["user_pass"] = "testing";
+                }
 
                 // Creating a new user, and storing the resulting ID in a temporary variable
                 $userId = wp_insert_user($userData);
