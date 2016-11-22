@@ -6,7 +6,7 @@
     } else {
         // If the user has submitted the registration form
         if(count($_POST) > 0){
-            lp_financialReporter_User::registerNewUser($_POST);
+            $registration = lp_financialReporter_User::registerNewUser($_POST);
         }
     }
 ?>
@@ -24,22 +24,23 @@
         </div>
         <div class="row">
             <div class="col-xs-8">
-                <form method="POST" action="./">
-                    <label>First Name
-                        <input type="text" name="first_name">
-                    </label>
-                    <label>Last Name
-                        <input type="text" name="last_name">
-                    </label>
-                    <label>Username
-                        <input type="text" name="username">
-                    </label>
-                    <label>Email
-                        <input type="email" name="email">
-                    </label>
-                    <input type="submit" value="Register as an Employee">
-                </form>
-                or <a href="/ssp2/assignment02/user-login">Login</a>
+                <?php
+                    if(isset($registration)) {
+                        if(count($registration->errors) == 0){
+                            if(isset($registration->email)){
+                                echo "<p>An email has been sent to the email address you provided: " . $registration->email . "</p>";
+                                echo "<p>Please use the link provided in this email to complete your registration.</p>";
+                            }
+                        } else {
+                            foreach($registration->errors as $key => $error){
+                                echo $error . "<br>";
+                            }
+                            include_once("components/registration_form.php");
+                        }
+                    } else {
+                        include_once("components/registration_form.php");
+                    }
+                ?>
             </div>
         </div>
     </div>

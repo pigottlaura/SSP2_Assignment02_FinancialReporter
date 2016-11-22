@@ -59,10 +59,25 @@
 
         // Registering a new user
         public static function registerNewUser($registrationData) {
+            $response = (object) array(
+                "email" => null,
+                "errors" => array()
+            );
 
             // Checking if the data provied is valid, based on the options specified
-            if(lp_financialReporter_InputData::validateData($registrationData, array())) {
+            $dataValidated = lp_financialReporter_InputData::validateData($registrationData, array(
+                "required" => array("user_login", "first_name", "last_name", "email"),
+                "email" => array("email")
+            ));
 
+            // Looping through any errors that may have been returned from the data
+            // validation, and adding them to the response errors array
+            foreach($dataValidated->errors as $key => $error){
+                array_push($response->errors, $error);
+            }
+
+            // If the data is validated then proceed with the registration
+            if($dataValidated->dataValidated) {
                 // Sanitising the data provided
                 $sanitisedData = lp_financialReporter_InputData::sanitiseData($registrationData);
 
@@ -81,7 +96,11 @@
 
                 // Checking if the attempt to create the user resulted in any errors
                 if(is_wp_error($userId)) {
-                    // TO DO
+                    foreach($userId->errors as $key => $error){
+                        foreach($error as $errKey => $errorData){
+                            array_push($response->errors, $errorData);
+                        }
+                    }
                 } else {
                     // If there was no error returned from the insert, then log this user in
 
@@ -89,20 +108,19 @@
                     update_user_meta($userId, "first_name", $sanitisedData["first_name"]);
                     update_user_meta($userId, "last_name", $sanitisedData["last_name"]);
 
-                    // Setting the current user to be the one that we just registered,
-                    // by setting the "current user" and "auth cookie" to be equal
-                    // to their ID
-                    wp_set_current_user($userId);
-                    wp_set_auth_cookie($userId);
+                    if($_SERVER['SERVER_NAME'] == "localhost"){
+                        array_push($response->errors, "As this site is running locally (for testing purposes), no registration email will be sent, and so your password has defaulted to 'testing'.");
+                    } else {
+                        // Sending a new user notification to the user
+                        wp_new_user_notification($userId, null, "both");
 
-                    // Sending a new user notification to the user
-                    wp_new_user_notification($userId, null, "both");
-
-                    // Redirecting the user to the expenses page, where they will be
-                    // directed to the appropriate layout for their role
-                    wp_redirect("/ssp2/assignment02/expenses");
+                        $response->email = $sanitisedData["email"];
+                    }
                 }
             }
+
+            // Returning the response object to the caller
+            return $response;
         }
     }
 ?>

@@ -11,11 +11,29 @@
             // Creating a temporary object, to store the result, and any errors
             // of, the attempt to validate the data, based on the options supplied
             $result = (object) array(
-                "dataValidated" => false,
+                "dataValidated" => true,
                 "errors" => array()
             );
 
-            // TO DO
+            foreach($data as $inputName => $inputValue){
+                // Creating a "pretty" version of the input name, incase it needs to be
+                // traced out in any errors from the validation
+                $prettyInputName = "\"" . str_replace("_", " ", $inputName) . "\"";
+
+                if(isset($options["required"]) && in_array($inputName, $options["required"])){
+                    if(isset($inputValue) == false || strlen($inputValue) == 0){
+                        $result->dataValidated = false;
+                        array_push($result->errors, $prettyInputName . " is a required field");
+                    }
+                }
+
+                if(isset($options["email"]) && in_array($inputName, $options["email"])){
+                    if(is_email($inputValue) == false){
+                        $result->dataValidated = false;
+                        array_push($result->errors, $prettyInputName . " must contain a valid email address");
+                    }
+                }
+            }
 
             return $result;
         }
