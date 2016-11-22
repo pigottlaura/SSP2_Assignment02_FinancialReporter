@@ -30,12 +30,18 @@
     <div class="col-xs-9">
         <div class="row">
             <div class="col-xs-12">
+                <?php include("components/the_loop_noLinks.php"); ?>
+            </div>
+        </div>
+        <div class="row">
+                <table>
+                    <tr>
+                        <th>Category Name</th>
+                        <th>Action</th>
+                    </tr>
                 <?php
                     $categories = lp_financialReporter_Expense::getAllCategories();
 
-                    echo "<h3>Categories</h3>";
-                    echo "<table>";
-                    echo "<tr><th>Category Name</th><th>Action</th></tr>";
                     foreach($categories as $key => $category){
                         echo "<tr>";
                         echo "<td>" . $category->name . "</td>";
@@ -48,8 +54,8 @@
                         echo "</td>";
                         echo "</tr>";
                     }
-                    echo "</table>";
                 ?>
+                </table>
             </div>
         </div>
     </div>

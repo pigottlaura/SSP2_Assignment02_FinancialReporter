@@ -47,7 +47,10 @@
     <div class="col-xs-9">
         <div class="row">
             <div class="col-xs-12">
-                <h3>Expenses</h3>
+                <?php include("components/the_loop_noLinks.php"); ?>
+            </div>
+        </div>
+        <div class="row">
                 <table>
                     <tr>
                         <th id="id" class="orderHeading">ID</th>
