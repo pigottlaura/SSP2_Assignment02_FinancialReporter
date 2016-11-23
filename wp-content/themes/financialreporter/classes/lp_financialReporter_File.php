@@ -87,6 +87,7 @@
             $wpdb->query("DELETE FROM lp_financialReporter_expense WHERE employee_id=" . $userId);
         }
 
+        // Used as a filter (which is added in the Setup class)
         public static function useCustomDir($dirs) {
             $customDir = "/receipts";
             $dirs['subdir'] = $customDir;
@@ -96,7 +97,7 @@
             return $dirs;
         }
 
-
+        // Used as a filter (which is added in the Setup class)
         public static function useCustomFilename($file) {
             $file['name'] = time() . "_" . $file['name'];
             return $file;

@@ -60,6 +60,20 @@
                 'name' => 'Main Sidebar',
                 'id' => 'main-sidebar'
             ));
+
+
+            /*
+            $sidebarWidgets = array(
+                "main-sidebar" => array (
+                    array(
+                       "id" => "recent-posts-2"
+                    )
+                )
+            );
+
+            var_dump(get_option("page_on_front"));
+            apply_filters("sidebars_widgets", $sidebarWidgets);
+            */
         }
 
         private static function onDeleteUser($userId){
