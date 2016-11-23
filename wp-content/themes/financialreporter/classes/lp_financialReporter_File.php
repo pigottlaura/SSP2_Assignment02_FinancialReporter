@@ -75,5 +75,31 @@
 
             return $receiptUploadsDir;
         }
+
+        public static function deleteUserReceipts($userId){
+            // If a user is being deleted, then removing the expense they had claimed
+            // from the database
+            $receipts = ("SELECT * FROM lp_financialReporter_expense WHERE receipt IS NOT NULL AND employee_id=" . $userId);
+            if(count($receipts) > 0){
+                // NEED TO DELETE RECEIPT FILES ASWELL (if they exist)
+            }
+            global $wpdb;
+            $wpdb->query("DELETE FROM lp_financialReporter_expense WHERE employee_id=" . $userId);
+        }
+
+        public static function useCustomDir($dirs) {
+            $customDir = "/receipts";
+            $dirs['subdir'] = $customDir;
+            $dirs['path'] = $dirs['basedir'] . $customDir;
+            $dirs['url'] = $dirs['baseurl'] . $customDir;
+
+            return $dirs;
+        }
+
+
+        public static function useCustomFilename($file) {
+            $file['name'] = time() . "_" . $file['name'];
+            return $file;
+        }
     }
 ?>
