@@ -40,10 +40,11 @@
                         $receiptPath = null;
 
                         // Only works locally at the moment (so checking if on localhost)
-                        // Checking if the files array contains a "receipt" paramater
+                        // Checking if the files array contains a "receipt" parameter
                         // i.e. which will reference the file the user has uploaded with the
-                        // expense claim
-                        if(isset($files["receipt"]) && $_SERVER['SERVER_NAME'] == "localhost"){
+                        // expense claim, and that the size of the file is greater than 0
+                        // i.e. that a file was actually included in the submission
+                        if(isset($files["receipt"]) && $files["receipt"]["size"] > 0 && $_SERVER['SERVER_NAME'] == "localhost"){
                             // Attempting the save the file using the saveFile static method
                             // of the lp_financialReporter_File class. Storing the result in a
                             // temporary variable
@@ -87,10 +88,12 @@
                 }
             }
 
+            if(count($response->errors) == 0){
+                // Redirecting the user to the current page (to remove all reference to the POST request,
+                // as well as any GET params that were passed as part of this process
+                wp_redirect("./");
+            }
             return $response;
-            // Redirecting the user to the current page (to remove all reference to the POST request,
-            // as well as any GET params that were passed as part of this process
-            //wp_redirect("./");
         }
 
         // Allowing employees to remove expenses that have not yet been approved
