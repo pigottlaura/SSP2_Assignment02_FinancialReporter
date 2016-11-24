@@ -74,15 +74,23 @@
             $themePageIds = get_option("lp_financialReporter_allPages");
             $themePages = explode(",", $themePageIds);
             foreach($themePages as $key => $pageId) {
-                wp_delete_post($pageId, false);
+                wp_delete_post($pageId, true);
             }
             delete_option("lp_financialReporter_allPages");
             delete_option("lp_financialReporter_excludePagesFromMenu");
         }
 
-        private static function excludeFromMenu($args) {
-            $args['exclude'] = get_option("lp_financialReporter_excludePagesFromMenu");
-            return $args;
+        public static function excludeFromMenu($items, $menu, $args) {
+            $excludePagesFromMenu = get_option("lp_financialReporter_excludePagesFromMenu");
+            $excludePagesFromMenuArray = explode(",", $excludePagesFromMenu);
+
+            foreach ($items as $key => $item ) {
+                if(in_array($item->object_id, $excludePagesFromMenuArray)){
+                    unset($items[$key]);
+                }
+            }
+
+            return $items;
         }
     }
 ?>

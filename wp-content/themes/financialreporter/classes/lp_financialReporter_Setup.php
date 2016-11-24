@@ -57,7 +57,7 @@
             add_filter('wp_handle_upload_prefilter', 'lp_financialReporter_File::useCustomFilename' );
 
             // Creating a filter for when pages
-            add_filter("wp_page_menu_args", "lp_financialReporter_Pages::excludeFromMenu");
+            add_filter("wp_get_nav_menu_items", "lp_financialReporter_Pages::excludeFromMenu", 10, 3);
         }
 
         public static function addThemeSupports() {
