@@ -33,17 +33,6 @@
             return $response;
         }
 
-        public static function createReceiptUploadDir() {
-            $wpUploadDirs = wp_upload_dir();
-            $receiptUploadsDir = $wpUploadDirs['basedir'] . "/receipts/";
-
-            if (file_exists($receiptUploadsDir) == false) {
-                $success = wp_mkdir_p($receiptUploadsDir);
-            }
-
-            return $receiptUploadsDir;
-        }
-
         public static function deleteUserReceipts($userId){
             // If a user is being deleted, then removing the expense they had claimed
             // from the database

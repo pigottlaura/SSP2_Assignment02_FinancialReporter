@@ -22,8 +22,6 @@
             // (and if not, then creating them) using the Pages class
             lp_financialReporter_Pages::checkRequiredPages();
 
-            lp_financialReporter_File::createReceiptUploadDir();
-
             self::createNavMenu();
         }
 
