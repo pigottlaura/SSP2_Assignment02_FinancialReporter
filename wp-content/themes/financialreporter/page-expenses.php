@@ -4,12 +4,12 @@
     if(is_user_logged_in()) {
         // Redirecting the user to the appropriate page based on their rolw
         if(lp_financialReporter_User::getUserRole() == "administrator"){
-            wp_redirect("/ssp2/assignment02/employer-expenses");
+            wp_redirect(home_url("/employer-expenses"));
         } else {
-            wp_redirect("/ssp2/assignment02/employee-expenses");
+            wp_redirect(home_url("/employee-expenses"));
         }
     } else {
         // This user is not yet logged in, so redirecting them to the login page
-        wp_redirect("/ssp2/assignment02/user-login");
+        wp_redirect(home_url("/user-login"));
     }
 ?>

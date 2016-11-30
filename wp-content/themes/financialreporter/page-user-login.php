@@ -2,7 +2,7 @@
 <?php
     // Only people that are not logged in can access this page page
     if(is_user_logged_in()){
-        wp_redirect("/ssp2/assignment02/expenses");
+        wp_redirect(home_url("/expenses"));
     }
 ?>
 <?php get_header(); ?>
@@ -23,12 +23,12 @@
                     $loginFormArgs = array(
                         "label_remember" => __("Remember Me"),
                         "label_log_in" => __("Login"),
-                        "redirect" => "/ssp2/assignment02/expenses",
+                        "redirect" => home_url("/expenses"),
                         "remember" => true
                     );
                     wp_login_form($loginFormArgs);
                 ?>
-                or <a href="/ssp2/assignment02/user-register">Register</a>
+                or <a href="<?php echo home_url("/user-register"); ?>">Register</a>
             </div>
         </div>
     </div>

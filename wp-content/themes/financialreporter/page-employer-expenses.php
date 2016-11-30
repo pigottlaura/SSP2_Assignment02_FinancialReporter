@@ -7,10 +7,10 @@
                 lp_financialReporter_User::attemptAction($_GET["action"]);
             }
         } else{
-            wp_redirect("/ssp2/assignment02/expenses");
+            wp_redirect(home_url("/expenses"));
         }
     } else {
-        wp_redirect("/ssp2/assignment02/user-login");
+        wp_redirect(home_url("/user-login"));
     }
 ?>
 <?php get_header(); ?>

@@ -13,4 +13,4 @@
     </label>
     <input type="submit" value="Register as an Employee">
 </form>
-or <a href="/ssp2/assignment02/user-login">Login</a>
+or <a href="<?php echo home_url("/user-login"); ?>">Login</a>

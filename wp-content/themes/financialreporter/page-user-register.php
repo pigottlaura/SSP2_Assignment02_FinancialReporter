@@ -2,7 +2,7 @@
 <?php
     // Only people that are not logged in can access this page page
     if(is_user_logged_in()){
-        wp_redirect("/ssp2/assignment02/expenses");
+        wp_redirect(home_url("/expenses"));
     } else {
         // If the user has submitted the registration form
         if(count($_POST) > 0){

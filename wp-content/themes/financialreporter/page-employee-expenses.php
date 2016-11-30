@@ -3,16 +3,18 @@
     // Only logged in subscribers can access this page
     if(is_user_logged_in()) {
         if(lp_financialReporter_User::getUserRole() == "subscriber") {
+            $subscriber = get_role("subscriber");
+            $subscriber->add_cap("upload_files");
             if (isset($_GET["action"])) {
                 $attemptedAction = lp_financialReporter_User::attemptAction($_GET["action"]);
             }
         } else {
             // This user does not have the right role to access this page
-            wp_redirect("/ssp2/assignment02/expenses");
+            wp_redirect(home_url("/expenses"));
         }
     } else {
         // This user is not logged in
-        wp_redirect("/ssp2/assignment02/user-login");
+        wp_redirect(home_url("/user-login"));
     }
 ?>
 <?php get_header(); ?>
