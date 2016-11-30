@@ -3,10 +3,6 @@
     // Only logged in subscribers can access this page
     if(is_user_logged_in()) {
         if(lp_financialReporter_User::getUserRole() == "subscriber") {
-            $subscriber = get_role("subscriber");
-            $subscriber->add_cap("upload_files");
-
-            lp_financialReporter_File::deleteUserReceipts(get_current_user_id());
             if (isset($_GET["action"])) {
                 $attemptedAction = lp_financialReporter_User::attemptAction($_GET["action"]);
             }
