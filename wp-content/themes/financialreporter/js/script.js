@@ -27,6 +27,7 @@ function setupIcons(){
 
 function setupEventListeners(){
     document.addEventListener("click", clickEvent);
+    document.getElementById("addNewExpense").addEventListener("submit", addNewExpenseFormSubmitEvent);
 }
 
 function clickEvent(e){
@@ -41,6 +42,22 @@ function clickEvent(e){
         }
         location.reload();
     }
+}
+
+function addNewExpenseFormSubmitEvent(e){
+    e.preventDefault();
+    var adminAjaxURL = e.target.getAttribute("action");
+    var data = {
+        "action": "addExpense",
+        "category": e.target.querySelector("[name=category]").value,
+        "cost": e.target.querySelector("[name=cost]").value,
+        "description": e.target.querySelector("[name=description]").value
+    };
+    //console.log(data);
+
+    sendAjaxRequest(e.target.getAttribute("action"), data, function(response){
+       console.log(response);
+    });
 }
 
 function cookieExists(name){
@@ -71,4 +88,22 @@ function getCookieValue(name){
 
 function setCookieValue(name, val){
     document.cookie = name + "=" + val + ";path=/";
+}
+
+function sendAjaxRequest(reqURL, data, callbackFunction, reqMethod){
+    console.log(data);
+    /*
+    var method = reqMethod != null ? reqMethod : "GET";
+
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            callbackFunction(this.responseText);
+        }
+    };
+    xhttp.open("POST", reqURL, true);
+    xhttp.send(data);
+    */
+
+    $.post(reqURL, data, callbackFunction);
 }

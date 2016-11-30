@@ -2,11 +2,7 @@
 <?php
     // Only logged in subscribers can access this page
     if(is_user_logged_in()) {
-        if(lp_financialReporter_User::getUserRole() == "subscriber") {
-            if (isset($_GET["action"])) {
-                $attemptedAction = lp_financialReporter_User::attemptAction($_GET["action"]);
-            }
-        } else {
+        if(lp_financialReporter_User::getUserRole() != "subscriber") {
             // This user does not have the right role to access this page
             wp_redirect(home_url("/expenses"));
         }
@@ -20,17 +16,7 @@
 <div class="row">
     <div class="col-xs-3">
         <h3>Add an Expense</h3>
-        <?php
-            if(isset($attemptedAction) && $attemptedAction->action == "addExpense"){
-                if(count($attemptedAction->errors) > 0){
-                    echo "<strong>Error:</strong> ";
-                    foreach($attemptedAction->errors as $key => $error){
-                        echo $error . "<br>";
-                    }
-                }
-            }
-        ?>
-        <form method="POST" action="./?action=addExpense" enctype="multipart/form-data">
+        <form action="<?php echo admin_url("admin-ajax.php"); ?>" enctype="multipart/form-data" id="addNewExpense">
             <label>Category
                 <select name="category" required>
                     <option selected disabled class="hidden"></option>

@@ -88,11 +88,6 @@
                 }
             }
 
-            if(count($response->errors) == 0){
-                // Redirecting the user to the current page (to remove all reference to the POST request,
-                // as well as any GET params that were passed as part of this process
-                wp_redirect("./");
-            }
             return $response;
         }
 

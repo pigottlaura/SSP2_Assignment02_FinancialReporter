@@ -49,6 +49,14 @@
             add_action("delete_user", "lp_financialReporter_Setup::onDeleteUser");
 
             add_action("wp_enqueue_scripts", "lp_financialReporter_Setup::enqueueCustomScripts");
+            
+            add_action("wp_ajax_addExpense", "lp_financialReporter_Setup::ajaxReq");
+        }
+
+        public static function ajaxReq(){
+            $result = lp_financialReporter_User::attemptAction('addExpense');
+            echo json_encode($result);
+            die();
         }
 
         public static function addFilters() {
@@ -99,7 +107,8 @@
         public static function enqueueCustomScripts(){
             wp_enqueue_style("bootstrap-css-stylesheet", "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css");
             wp_enqueue_style("main-css-stylesheet", get_template_directory_uri() . "/style.css", "bootstrap-css-stylesheet");
-            wp_enqueue_script("main-js-script", get_template_directory_uri() . "/js/script.js", array(), null, true);
+            wp_enqueue_script("jquery-js-script", "https://code.jquery.com/jquery-2.2.4.min.js", array(), null, true);
+            wp_enqueue_script("main-js-script", get_template_directory_uri() . "/js/script.js", "jquery-js-script", null, true);
         }
 
         private static function createNavMenu(){
