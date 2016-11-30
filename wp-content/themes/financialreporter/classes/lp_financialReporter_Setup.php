@@ -6,9 +6,9 @@
         }
 
         public static function pageLoading() {
-            lp_financialReporter_Setup::addThemeSupports();
-            lp_financialReporter_Setup::addActions();
-            lp_financialReporter_Setup::addFilters();
+            self::addThemeSupports();
+            self::addActions();
+            self::addFilters();
         }
 
         // Function which is invoked by the "after_switch_theme" action
@@ -18,11 +18,11 @@
             // (and if not, then creating them) using the DatabaseTables class
             lp_financialReporter_DatabaseTables::checkRequiredTables();
 
+            self::createNavMenu();
+
             // Checking that all pages required by this theme exist
             // (and if not, then creating them) using the Pages class
             lp_financialReporter_Pages::checkRequiredPages();
-
-            self::createNavMenu();
         }
 
         // Function which is invoked by te "switch_theme" action
@@ -45,7 +45,10 @@
             // is deactivated (i.e. another theme is activated) so that pages and options
             // that were created when the theme was activated can be removed
             add_action("switch_theme", "lp_financialReporter_Setup::deactivated");
+
             add_action("delete_user", "lp_financialReporter_Setup::onDeleteUser");
+
+            add_action("wp_enqueue_scripts", "lp_financialReporter_Setup::enqueueCustomScripts");
         }
 
         public static function addFilters() {
@@ -82,20 +85,6 @@
                 'name' => 'Main Sidebar',
                 'id' => 'main-sidebar'
             ));
-
-
-            /*
-            $sidebarWidgets = array(
-                "main-sidebar" => array (
-                    array(
-                       "id" => "recent-posts-2"
-                    )
-                )
-            );
-
-            var_dump(get_option("page_on_front"));
-            apply_filters("sidebars_widgets", $sidebarWidgets);
-            */
         }
 
         // Public method, invoked when a user is being deleted (based on
@@ -105,6 +94,12 @@
             // Deleting all receipts
             lp_financialReporter_File::deleteUserReceipts($userId);
             lp_financialReporter_Expense::removeAllExpensesForUser($userId);
+        }
+
+        public static function enqueueCustomScripts(){
+            wp_enqueue_style("bootstrap-css-stylesheet", "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css");
+            wp_enqueue_style("main-css-stylesheet", get_template_directory_uri() . "/style.css", "bootstrap-css-stylesheet");
+            wp_enqueue_script("main-js-script", get_template_directory_uri() . "/js/script.js", array(), null, true);
         }
 
         private static function createNavMenu(){
@@ -120,8 +115,6 @@
                 'menu-item-url' => home_url("/expenses"),
                 'menu-item-status' => 'publish'
             ));
-
-            echo $navMenuId;
 
             update_option("lp_financialReporter_navMenuId", $navMenuId);
         }

@@ -3,13 +3,14 @@
     <head>
         <title>
             <?php
-                echo "Financial Reporter";
+                echo get_bloginfo("name");
+                if(!is_home()){
+                    echo " | ";
+                    the_title();
+                }
             ?>
         </title>
         <link rel="shortcut icon" href="<?php echo get_bloginfo('template_url'); ?>/favicon.ico" />
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-        <link rel="stylesheet" type="text/css" href="<?php echo get_bloginfo('template_url'); ?>/style.css">
-        <script src="<?php echo get_bloginfo('template_url'); ?>/script.js"></script>
         <?php wp_head(); ?>
     </head>
     <body class="container-fluid<?php if(is_user_logged_in()){ echo ' wp-logged-in wp-role-' . lp_financialReporter_User::getUserRole(); } ?>">
@@ -26,7 +27,7 @@
                     echo "Welcome back " . $currentUser->display_name . "!";
                 } else if($userRole == "administrator"){
                     echo "Hello Admin " . $currentUser->display_name . "!";
-                    echo "<button><a href='/ssp2/assignment02/expense-categories'>View Expense Categories</a></button>";
+                    echo "<button><a href='" . home_url("/expense-categories") . "'>View Expense Categories</a></button>";
                 }
 
                 echo "<button><a href='" . wp_logout_url(home_url()) . "'>Logout</a></button>";
