@@ -25,47 +25,15 @@
                 array_push($response->errors, $result["error"]);
             }
             if(isset($result["url"])){
-                $response->filepath = $result["url"];
+                $relativePath = str_replace(home_url("/"), "/", $result["url"]);
+                $response->filepath = $relativePath;
                 $response->successful = true;
             }
-
-            /*
-            $originalFilename = $file["name"];
-            $saveAsFilename = time() . "_" . $originalFilename;
-            $tempPath = $file["tmp_name"];
-            echo $tempPath;
-            $mimeType = $file["type"];
-
-            $saveToPath =  self::getUploadPath() . $saveAsFilename;
-            echo $saveToPath;
-            if(in_array($mimeType, self::$allowedFiletypes)) {
-                echo "this file is allowed";
-                if(self::uploadFile($file)) {
-                    $response->filepath = $saveToPath;
-                } else {
-                    array_push($response->errors, "Could not save file");
-                }
-            } else {
-                array_push($response->errors, "This filetype is not allowed");
-            }
-
-            */
 
             return $response;
         }
 
-        /*
-        public static function uploadFile($tempPath, $saveToPath=null) {
-            $success = false;
-
-
-            move_uploaded_file($tempPath, $saveToPath);
-
-            return $success;
-        }
-        */
-
-        public static function getUploadPath() {
+        public static function createReceiptUploadDir() {
             $wpUploadDirs = wp_upload_dir();
             $receiptUploadsDir = $wpUploadDirs['basedir'] . "/receipts/";
 
@@ -80,9 +48,13 @@
             // If a user is being deleted, then removing the expense they had claimed
             // from the database
             global $wpdb;
-            $receipts = $wpdb->get_results("SELECT * FROM lp_financialReporter_expense WHERE receipt IS NOT NULL AND employee_id=" . $userId);
-            if(count($receipts) > 0) {
+            $expensesWithReceipts = $wpdb->get_results("SELECT * FROM lp_financialReporter_expense WHERE receipt IS NOT NULL AND employee_id=" . $userId);
+            //var_dump($expensesWithReceipts);
+            if(count($expensesWithReceipts) > 0) {
                 // NEED TO DELETE RECEIPT FILES ASWELL (if they exist)
+                foreach($expensesWithReceipts as $expense){
+                    unlink(ABSPATH . $expense->receipt);
+                }
             }
         }
 

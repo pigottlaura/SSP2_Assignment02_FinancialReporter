@@ -44,15 +44,15 @@
                         // i.e. which will reference the file the user has uploaded with the
                         // expense claim, and that the size of the file is greater than 0
                         // i.e. that a file was actually included in the submission
-                        if(isset($files["receipt"]) && $files["receipt"]["size"] > 0 && $_SERVER['SERVER_NAME'] == "localhost"){
+                        if(isset($files["receipt"]) && $files["receipt"]["size"] > 0){
                             // Attempting the save the file using the saveFile static method
                             // of the lp_financialReporter_File class. Storing the result in a
                             // temporary variable
                             $saveFile = lp_financialReporter_File::saveFile($files["receipt"]);
 
                             // Checking if any errors were returned from the saveFile attempt
-                            if(count($saveFile->errors) > 0){
-                                foreach ($saveFile->errors as $key => $error){
+                            if(count($saveFile->errors) > 0) {
+                                foreach ($saveFile->errors as $key => $error) {
                                     array_push($response->errors, $error);
                                     $response->successful = false;
                                 }

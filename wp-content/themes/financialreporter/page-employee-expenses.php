@@ -5,6 +5,8 @@
         if(lp_financialReporter_User::getUserRole() == "subscriber") {
             $subscriber = get_role("subscriber");
             $subscriber->add_cap("upload_files");
+
+            lp_financialReporter_File::deleteUserReceipts(get_current_user_id());
             if (isset($_GET["action"])) {
                 $attemptedAction = lp_financialReporter_User::attemptAction($_GET["action"]);
             }
@@ -90,7 +92,7 @@
                                 if($expense->receipt == null){
                                     echo "<td>None</td>";
                                 } else {
-                                    echo "<td><a href='" . $expense->receipt . "' target='_blank'>View</a></td>";
+                                    echo "<td><a href='" . home_url($expense->receipt) . "' target='_blank'>View</a></td>";
                                 }
                                 echo "<td>" . $expense->description . "</td>";
                                 echo "<td>" . $expense->status . "</td>";

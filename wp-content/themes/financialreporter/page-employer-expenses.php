@@ -54,7 +54,7 @@
                                 if($expense->receipt == null){
                                     echo "<td>None</td>";
                                 } else {
-                                    echo "<td><a href='" . $expense->receipt . "' target='_blank'>View</a></td>";
+                                    echo "<td><a href='" . home_url($expense->receipt) . "' target='_blank'>View</a></td>";
                                 }
                                 echo "<td>" . $expense->description . "</td>";
                                 echo "<td>" . $expense->status . "</td>";
