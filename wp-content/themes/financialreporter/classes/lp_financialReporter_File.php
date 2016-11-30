@@ -79,12 +79,11 @@
         public static function deleteUserReceipts($userId){
             // If a user is being deleted, then removing the expense they had claimed
             // from the database
-            $receipts = ("SELECT * FROM lp_financialReporter_expense WHERE receipt IS NOT NULL AND employee_id=" . $userId);
-            if(count($receipts) > 0){
+            global $wpdb;
+            $receipts = $wpdb->get_results("SELECT * FROM lp_financialReporter_expense WHERE receipt IS NOT NULL AND employee_id=" . $userId);
+            if(count($receipts) > 0) {
                 // NEED TO DELETE RECEIPT FILES ASWELL (if they exist)
             }
-            global $wpdb;
-            $wpdb->query("DELETE FROM lp_financialReporter_expense WHERE employee_id=" . $userId);
         }
 
         // Used as a filter (which is added in the Setup class)

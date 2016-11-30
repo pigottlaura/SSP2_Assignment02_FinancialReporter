@@ -124,6 +124,15 @@
             wp_redirect("./");
         }
 
+        public static function removeAllExpensesForUser($userId){
+            global $wpdb;
+            $wpdb->delete(
+                "lp_financialReporter_expense",
+                array("employee_id" => $userId),
+                array("%d")
+            );
+        }
+
         public static function makeDecisionOnExpense($expenseId, $decision) {
 
             // Ensuring this user is a administrator i.e. employer

@@ -56,7 +56,11 @@
             // as to avoid naming conflicts)
             add_filter('wp_handle_upload_prefilter', 'lp_financialReporter_File::useCustomFilename' );
 
-            // Creating a filter for when pages
+            // Creating a filter for when the navigation menu is being built, so that
+            // some of the dynamically created pages can be excluded from it i.e.
+            // incase the user has their menu set up to automatically include top
+            // level pages in the navigation. Giving this filter a priority of 10, and
+            // allowing it to accept three arguments
             add_filter("wp_get_nav_menu_items", "lp_financialReporter_Pages::excludeFromMenu", 10, 3);
         }
 
@@ -90,8 +94,12 @@
             */
         }
 
-        private static function onDeleteUser($userId){
+        // Public method, invoked when a user is being deleted (based on
+        // an action defined above).
+        public static function onDeleteUser($userId){
+            // Deleting all receipts
             lp_financialReporter_File::deleteUserReceipts($userId);
+            lp_financialReporter_Expense::removeAllExpensesForUser($userId);
         }
     }
 ?>
