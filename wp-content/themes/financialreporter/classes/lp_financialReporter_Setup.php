@@ -21,6 +21,10 @@
             // Checking that all pages required by this theme exist
             // (and if not, then creating them) using the Pages class
             lp_financialReporter_Pages::checkRequiredPages();
+
+            lp_financialReporter_File::createReceiptUploadDir();
+
+            self::createNavMenu();
         }
 
         // Function which is invoked by te "switch_theme" action
@@ -28,6 +32,8 @@
         public static function deactivated() {
             // Removing all pages created by the theme, when the theme was activated
             lp_financialReporter_Pages::removeThemePages();
+
+            self::deleteNavMenu();
         }
 
         // Adding action hooks every time a page is loaded, to detect actions such
@@ -97,9 +103,34 @@
         // Public method, invoked when a user is being deleted (based on
         // an action defined above).
         public static function onDeleteUser($userId){
+            echo "deleting user";
             // Deleting all receipts
             lp_financialReporter_File::deleteUserReceipts($userId);
             lp_financialReporter_Expense::removeAllExpensesForUser($userId);
+        }
+
+        private static function createNavMenu(){
+            $navMenuId = wp_create_nav_menu("Header Menu");
+
+            wp_update_nav_menu_item($navMenuId, 0, array(
+                'menu-item-title' =>  __('Home'),
+                'menu-item-url' => home_url("/"),
+                'menu-item-status' => 'publish'
+            ));
+            wp_update_nav_menu_item($navMenuId, 0, array(
+                'menu-item-title' =>  __('Expenses'),
+                'menu-item-url' => home_url("/expenses"),
+                'menu-item-status' => 'publish'
+            ));
+
+            echo $navMenuId;
+
+            update_option("lp_financialReporter_navMenuId", $navMenuId);
+        }
+
+        private static function deleteNavMenu(){
+            wp_delete_nav_menu(get_option("lp_financialReporter_navMenuId"));
+            delete_option("lp_financialReporter_navMenuId");
         }
     }
 ?>

@@ -44,7 +44,9 @@
             </div>
             <div class="col-xs-8">
                 <nav class="navbar navbar-default">
-                    <?php wp_nav_menu( array( 'menu' => 'header-menu')); ?>
+                    <?php
+                       wp_nav_menu(array("menu_id" => get_option("lp_financialReporter_navMenuId")));
+                    ?>
                 </nav>
             </div>
         </div>
