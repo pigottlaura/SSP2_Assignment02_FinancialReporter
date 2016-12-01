@@ -4,7 +4,9 @@ window.onload = function(e){
     adminAjaxURL = document.getElementById("ajax-url").value;
     setupCookies();
     setupEventListeners();
-    loadUserExpenses();
+    if(typeof customWindowOnload == "function") {
+        customWindowOnload();
+    }
 }
 
 function setupCookies() {
@@ -38,7 +40,9 @@ function updateTableHeadingIcons(){
 
 function setupEventListeners(){
     document.addEventListener("click", clickEvent);
-    document.getElementById("addNewExpense").addEventListener("submit", addNewExpenseFormSubmitEvent);
+    if(typeof customSetupEventListeners == "function"){
+        customSetupEventListeners();
+    }
 }
 
 function clickEvent(e){
@@ -51,38 +55,11 @@ function clickEvent(e){
             setCookieValue("orderBy", e.target.id);
             setCookieValue("order", "asc");
         }
-        location.reload();
-    }
-}
-
-function addNewExpenseFormSubmitEvent(e){
-    e.preventDefault();
-    var categoryInput = e.target.querySelector("[name=category]");
-    var costInput = e.target.querySelector("[name=cost]");
-    var descriptionInput = e.target.querySelector("[name=description]");
-
-    var data = {
-        "action": "addExpense",
-        "category": categoryInput.value,
-        "cost": costInput.value,
-        "description": descriptionInput.value
-    };
-
-    sendAjaxRequest(data, function(response){
-       console.log(response);
-        categoryInput.value = "";
-        costInput.value = "";
-        descriptionInput.value = "";
         loadUserExpenses();
-    });
-}
-
-function loadUserExpenses(){
-    sendAjaxRequest({"action": "getAllExpensesForCurrentUser"}, function(employeeExpensesResponse){
-        //console.log(employeeExpensesResponse);
-        document.getElementById("employeeExpenseData").innerHTML = JSON.parse(employeeExpensesResponse).html;
-        updateTableHeadingIcons();
-    });
+    }
+    if(typeof customClickEvent == "function") {
+        customClickEvent(e);
+    }
 }
 
 function cookieExists(name){
@@ -116,8 +93,9 @@ function setCookieValue(name, val){
 }
 
 function sendAjaxRequest(data, callbackFunction){
-    /*
     console.log(data);
+    /*
+
     var method = reqMethod != null ? reqMethod : "GET";
 
     var xhttp = new XMLHttpRequest();
