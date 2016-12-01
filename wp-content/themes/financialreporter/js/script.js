@@ -57,16 +57,22 @@ function clickEvent(e){
 
 function addNewExpenseFormSubmitEvent(e){
     e.preventDefault();
+    var categoryInput = e.target.querySelector("[name=category]");
+    var costInput = e.target.querySelector("[name=cost]");
+    var descriptionInput = e.target.querySelector("[name=description]");
+
     var data = {
         "action": "addExpense",
-        "category": e.target.querySelector("[name=category]").value,
-        "cost": e.target.querySelector("[name=cost]").value,
-        "description": e.target.querySelector("[name=description]").value
+        "category": categoryInput.value,
+        "cost": costInput.value,
+        "description": descriptionInput.value
     };
-    //console.log(data);
 
     sendAjaxRequest(data, function(response){
        console.log(response);
+        categoryInput.value = "";
+        costInput.value = "";
+        descriptionInput.value = "";
         loadUserExpenses();
     });
 }
