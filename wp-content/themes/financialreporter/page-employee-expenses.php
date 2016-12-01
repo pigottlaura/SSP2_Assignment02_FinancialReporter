@@ -29,7 +29,7 @@
             <label>Cost (€)
                 <input type="number" name="cost" min="0" step="0.01" required>
             </label>
-            <label class="fullWidth">Attach Receipt
+            <label class="fullWidth">Attach Receipt (optional)
                 <input type="file" name="receipt">
             </label>
             <label class="fullWidth">Description

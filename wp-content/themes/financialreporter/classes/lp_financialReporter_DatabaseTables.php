@@ -11,7 +11,8 @@
             // Accessing the global wpdb variable, to access the database
             global $wpdb;
 
-            // Specifying which tables are required for this theme
+            // Specifying which tables are required for this theme, as an array which will be looped through
+            // to create them
             $requiredTables = array('lp_financialReporter_expense', 'lp_financialReporter_expense_category');
 
             // Querying the tables schema, to get any results for databases with the same names
@@ -20,10 +21,8 @@
 
             // Checking if the number of databases returned from the query, matches
             // the number that was specified as required above
-            if(count($existingExpenseTables) == count($requiredTables)){
-                //echo "TABLES ALREADY EXIST";
-            } else {
-                // Since the tables don't already exist, creating them
+            if(count($existingExpenseTables) != count($requiredTables)){
+                // These tables do not already exist, so creating them
                 self::createRequiredTables();
             }
         }
@@ -35,7 +34,19 @@
             global $wpdb;
 
             // Creating the expense and expense category tables (with foreign keys and references enabled)
-            $wpdb->query("CREATE TABLE lp_financialReporter_expense_category (id INT(10) AUTO_INCREMENT, name VARCHAR(20), CONSTRAINT expense_category_pk PRIMARY KEY(id));");
+            // EXPENSE CATEGORY table
+                // The id will auto increment and be the primary key
+                // The name will be less than 20 characters
+            // EXPENSE table
+                // The id will auto increment and be the primary key
+                // The employee_id will be a BIGINT (to match with the domain of id's in WP tables) and will
+                // reference an id from the wp_users table
+                // The category will be an INT, and will reference an id from the expense_category table
+                // The receipt will be less that 125, and will store null or a link to an image/file
+                // The cost will be a decimal, with a maximum of 8 digits (2 of which have to be decimal places)
+                // The description will be text, with no specified length
+                // The status can only ever contain "Pending", "Approved" or "Rejected", and will default to "Pending"
+            $wpdb->query("CREATE TABLE lp_financialReporter_expense_category (id INT(10) AUTO_INCREMENT, name VARCHAR(20) UNIQUE, CONSTRAINT expense_category_pk PRIMARY KEY(id));");
             $wpdb->query("CREATE TABLE lp_financialReporter_expense (id INT(10) AUTO_INCREMENT, employee_id BIGINT(20) UNSIGNED NOT NULL, category INT(10) NOT NULL, receipt VARCHAR(125), cost DECIMAL(8, 2) NOT NULL, description TEXT NOT NULL, status ENUM('Pending', 'Approved', 'Rejected') DEFAULT 'Pending', date_submitted TIMESTAMP DEFAULT CURRENT_TIMESTAMP, decision_date TIMESTAMP, CONSTRAINT expense_employee_fk FOREIGN KEY(employee_id) REFERENCES wp_users(id), CONSTRAINT expense_category_fk FOREIGN KEY(category) REFERENCES lp_financialReporter_expense_category(id), CONSTRAINT expense_pk PRIMARY KEY (id));");
 
             // Adding in the default categories to the expense_cateogry table. Employers

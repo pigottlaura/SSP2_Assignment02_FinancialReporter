@@ -106,9 +106,10 @@
         // Public method, invoked when a user is being deleted (based on
         // an action defined above).
         public static function onDeleteUser($userId){
-            echo "deleting user";
-            // Deleting all receipts
+            // First deleting any receipts the user may have uploaded
             lp_financialReporter_File::deleteUserReceipts($userId);
+
+            // Deleting all expenses that the user has stored in the database
             lp_financialReporter_Expense::removeAllExpensesForUser($userId);
         }
 
