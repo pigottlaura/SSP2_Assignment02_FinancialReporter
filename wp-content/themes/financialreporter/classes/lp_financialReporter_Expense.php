@@ -97,6 +97,10 @@
 
         // Allowing employees to remove expenses that have not yet been approved
         public static function removeExpense($expenseId){
+            $response = (object) array(
+                "successful" => false,
+                "errors" => array()
+            );
             
             // Ensuring this user is a subscriber i.e. employee
             if(lp_financialReporter_User::getUserRole() == "subscriber") {
@@ -108,19 +112,23 @@
                     // Accessing the global wpdb variable, to access the database
                     global $wpdb;
 
+                    // If debug is on, then log all errors from the database (TESTING PURPOSES)
+                    if(get_option("lp_financialReporter_debug") == "on"){
+                        $wpdb->show_errors(true);
+                    }
+
                     // Deleting this expense, double checking that not only does the
                     // id match, but that the status is defiantly pending (as expenses
                     // that have already been decided on cannot be deleted)
                     $wpdb->delete(
                         "lp_financialReporter_expense",
-                        array("id" => $_GET["expenseId"], "status" => "Pending"),
+                        array("id" => $_POST["expenseId"], "status" => "Pending"),
                         array("%d", "%s")
                     );
+                    $response->successful = true;
                 }
             }
-            // Redirecting the user to the current page (to remove all reference to the POST request,
-            // as well as any GET params that were passed as part of this process
-            wp_redirect("./");
+            return $response;
         }
 
         public static function removeAllExpensesForUser($userId){
@@ -168,10 +176,11 @@
         }
 
         public static function getAllExpenses() {
-            // Initialising the result that will be returned to the caller
-            // before checking if this user has permissions to carry out this
-            // action or not, so that an empty array can be returned regardless
-            $expenses = array();
+            $response = (object) array(
+                "successful" => false,
+                "errors" => array(),
+                "html" => ""
+            );
 
             // Ensuring this user is a administrator i.e. employer
             if(lp_financialReporter_User::getUserRole() == "administrator") {
@@ -189,11 +198,46 @@
                 // on the wp_users table, based on the employee id of the expense mathcing with an id
                 // of a user). Ordering the resulting rows as specified by the values above (either
                 // Cookie's or defaults)
-                $expenses = $wpdb->get_results("SELECT lp_financialReporter_expense.*, wp_users.display_name, lp_financialReporter_expense_category.name as 'category_name' FROM lp_financialReporter_expense LEFT JOIN wp_users ON lp_financialReporter_expense.employee_id = wp_users.id LEFT JOIN lp_financialReporter_expense_category ON lp_financialReporter_expense.category = lp_financialReporter_expense_category.id ORDER BY " . $sortOrder->orderBy . " " . $sortOrder->order);
+                $allExpenses = $wpdb->get_results("SELECT lp_financialReporter_expense.*, wp_users.display_name, lp_financialReporter_expense_category.name as 'category_name' FROM lp_financialReporter_expense LEFT JOIN wp_users ON lp_financialReporter_expense.employee_id = wp_users.id LEFT JOIN lp_financialReporter_expense_category ON lp_financialReporter_expense.category = lp_financialReporter_expense_category.id ORDER BY " . $sortOrder->orderBy . " " . $sortOrder->order);
+
+                if(count($allExpenses) > 0) {
+                    foreach($allExpenses as $key => $expense){
+                        // Setting up values
+                        $expenseDate = date_create($expense->date_submitted);
+
+                        // Creating Table Row
+                        $response->html .= "<tr>";
+                        $response->html .= "<td>#" . $expense->id . "</td>";
+                        $response->html .= "<td>#" . $expense->employee_id . "</td>";
+                        $response->html .= "<td>" . $expense->display_name . "</td>";
+                        $response->html .= "<td>" . date_format($expenseDate, lp_financialReporter_Expense::$expenseDateFormat) . "</td>";
+                        $response->html .= "<td>" . $expense->category_name . "</td>";
+                        $response->html .= "<td>&euro;" . $expense->cost . "</td>";
+                        if($expense->receipt == null){
+                            $response->html .= "<td>None</td>";
+                        } else {
+                            $response->html .= "<td><a href='" . home_url($expense->receipt) . "' target='_blank'>View</a></td>";
+                        }
+                        $response->html .= "<td>" . $expense->description . "</td>";
+                        $response->html .= "<td>" . $expense->status . "</td>";
+                        if($expense->status == "Pending"){
+                            $response->html .= "<td>";
+                            $response->html .= "<a href='./?action=expenseApproval&decision=1&expenseId=" . $expense->id . "'>Approve</a>";
+                            $response->html .= " / ";
+                            $response->html .= "<a href='./?action=expenseApproval&decision=0&expenseId=" . $expense->id . "'>Reject</a>";
+                            $response->html .= "</td>";
+                        } else {
+                            $response->html .= "<td>Completed</td>";
+                        }
+                        $response->html .= "</tr>";
+                    }
+                } else {
+                    $response->html .= "<tr><td colspan='10'>No employees have claimed for expenses yet</td></tr>";
+                }
             }
 
             // Returning the list of expenses to the caller
-            return $expenses;
+            return $response;
         }
 
         public static function getAllExpensesForCurrentUser() {
@@ -245,7 +289,7 @@
                     $response->html .= "<td>" . $expense->description . "</td>";
                     $response->html .= "<td>" . $expense->status . "</td>";
                     if($expense->status == "Pending"){
-                        $response->html .= "<td><a href='./?action=removeExpense&expenseId=" . $expense->id . "'>Remove</a></td>";
+                        $response->html .= "<td><button id='" . $expense->id . "' class='removeExpense'>Remove</button></td>";
                     } else {
                         $response->html .= "<td>None</td>";
                     }
