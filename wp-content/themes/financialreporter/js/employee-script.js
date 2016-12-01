@@ -8,7 +8,10 @@ function customSetupEventListeners(){
 
 function customClickEvent(e){
     if(e.target.classList.contains("removeExpense")){
-        sendAjaxRequest({"action": "removeExpense", "expenseId": e.target.id}, function(jsonResponse){
+        var requestData = "action=removeExpense";
+        requestData += "&expenseId=" +  e.target.id;
+
+        sendAjaxRequest(requestData, function(jsonResponse){
             console.log(jsonResponse);
             updateEmployeeExpenses(jsonResponse.html);
         });
@@ -20,15 +23,15 @@ function addNewExpenseFormSubmitEvent(e){
     var categoryInput = e.target.querySelector("[name=category]");
     var costInput = e.target.querySelector("[name=cost]");
     var descriptionInput = e.target.querySelector("[name=description]");
+    var receiptInput = e.target.querySelector('[name=receipt]');
 
-    var data = {
-        "action": "addExpense",
-        "category": categoryInput.value,
-        "cost": costInput.value,
-        "description": descriptionInput.value
-    };
+    var requestData = "action=addExpense";
+    requestData += "&category=" + categoryInput.value;
+    requestData += "&cost=" + costInput.value;
+    requestData += "&description=" + descriptionInput.value;
 
-    sendAjaxRequest(data, function(jsonResponse){
+    console.log(receiptInput.files[0]);
+    sendAjaxRequest(requestData, function(jsonResponse){
         console.log(jsonResponse);
         categoryInput.value = "";
         costInput.value = "";

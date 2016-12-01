@@ -20,10 +20,9 @@ function addNewExpenseCategoryFormSubmitEvent(e) {
     e.preventDefault();
     var categoryNameInput = e.target.querySelector("[name=categoryName]");
 
-    var requestData = {
-        "action": "addNewExpenseCategory",
-        "categoryName": categoryNameInput.value
-    };
+    var requestData = "action=addNewExpenseCategory";
+    requestData += "&categoryName=" + categoryNameInput.value;
+
     sendAjaxRequest(requestData, function(jsonResponse){
         console.log(jsonResponse);
         updateEmployerExpenseCategories(jsonResponse.html);
@@ -32,11 +31,10 @@ function addNewExpenseCategoryFormSubmitEvent(e) {
 }
 
 function completeExpenseApproval(approvalButton){
-    var requestData = {
-        "action": "expenseApproval",
-        "expenseId": approvalButton.id,
-        "decision": approvalButton.getAttribute("data-decision")
-    };
+    var requestData = "action=expenseApproval";
+    requestData += "&expenseId=" + approvalButton.id;
+    requestData += "&decision=" + approvalButton.getAttribute("data-decision");
+
     sendAjaxRequest(requestData, function(jsonResponse){
         console.log(jsonResponse);
         updateEmployerExpenses(jsonResponse.html);
@@ -44,10 +42,9 @@ function completeExpenseApproval(approvalButton){
 }
 
 function removeExpenseCategory(removalButton) {
-    var requestData = {
-        "action": "removeExpenseCategory",
-        "categoryId": removalButton.id
-    };
+    var requestData = "action=removeExpenseCategory";
+    requestData += "&categoryId=" + removalButton.id;
+
     sendAjaxRequest(requestData, function(jsonResponse){
         console.log(jsonResponse);
         updateEmployerExpenseCategories(jsonResponse.html);

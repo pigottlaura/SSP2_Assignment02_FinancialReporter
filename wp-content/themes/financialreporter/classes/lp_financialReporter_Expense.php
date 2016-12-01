@@ -181,7 +181,7 @@
                         array("%d")
                     );
 
-                    $response->html = self::getAllUpdatedExpenses();
+                    $response->html = self::getUpdatedExpenses();
                 }
             }
             return $response;
@@ -441,7 +441,7 @@
             return $updatedExpenses->html;
         }
 
-        private static function getAllUpdatedExpenses(){
+        private static function getUpdatedExpenses(){
             $updatedExpenses = self::getAllExpenses();
             return $updatedExpenses->html;
         }
@@ -483,20 +483,6 @@
 
             // Returning the result to the caller
             return $categoryInUse;
-        }
-
-        // Getting the name of a category based on it's id
-        private static function getCategoryName($categoryId) {
-            // Accessing the global wpdb variable, to access the database
-            global $wpdb;
-
-            // Getting the value of the category's name column, based on a query
-            // to the expense_category database, for the category with the same
-            // id as the one specified. Storing the result in a temporary variable
-            $categoryName = $wpdb->get_var("SELECT name FROM lp_financialReporter_expense_category WHERE id=" . $categoryId);
-
-            // Returning the category name to the caller
-            return $categoryName;
         }
 
         private static function checkCookiesForSortOrder() {

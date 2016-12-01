@@ -98,21 +98,20 @@ function setCookieValue(name, val){
 
 function sendAjaxRequest(data, callbackFunction){
     console.log(data);
-    /*
-
-    var method = reqMethod != null ? reqMethod : "GET";
 
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-            callbackFunction(this.responseText);
+            callbackFunction(JSON.parse(this.responseText));
         }
     };
-    xhttp.open("POST", reqURL, true);
+    xhttp.open("POST", adminAjaxURL, true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.setRequestHeader("X-Requested-With", "XMLHttpRequest");
     xhttp.send(data);
-    */
-
+    /*
     $.post(adminAjaxURL, data, function(response){
         callbackFunction(JSON.parse(response));
     });
+    */
 }
