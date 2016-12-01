@@ -4,7 +4,7 @@
     include_once("autoloader.php");
 
     // Forcing the server to display errors when running remotely (if Debug is turned on)
-    if(CONF_DEBUG){
+    if(get_option("lp_financialReporter_debugOn") == "on"){
         ini_set('display_errors', 1);
         error_reporting(E_ALL);
     }
