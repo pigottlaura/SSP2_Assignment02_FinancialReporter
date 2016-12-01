@@ -40,19 +40,19 @@
             if(self::getUserRole() == "administrator") {
                 switch ($action) {
                     case "getAllExpenses": {
-                        lp_financialReporter_Expense::getAllExpenses();
+                        $response = lp_financialReporter_Expense::getAllExpenses();
                         break;
                     }
                     case "expenseApproval": {
-                        lp_financialReporter_Expense::makeDecisionOnExpense($_GET["expenseId"], $_GET["decision"]);
+                        $response = lp_financialReporter_Expense::makeDecisionOnExpense($_POST["expenseId"], $_POST["decision"]);
                         break;
                     }
                     case "addNewExpenseCategory": {
-                        lp_financialReporter_Expense::addCategory($_POST["categoryName"]);
+                        $response = lp_financialReporter_Expense::addCategory($_POST["categoryName"]);
                         break;
                     }
                     case "removeExpenseCategory": {
-                        lp_financialReporter_Expense::removeCategory($_GET["categoryId"]);
+                        $response = lp_financialReporter_Expense::removeCategory($_POST["categoryId"]);
                         break;
                     }
                     default: {

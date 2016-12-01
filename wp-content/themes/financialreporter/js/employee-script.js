@@ -1,6 +1,5 @@
 function customWindowOnload(){
     console.log("hello employee");
-    loadUserExpenses();
 }
 
 function customSetupEventListeners(){
@@ -9,9 +8,9 @@ function customSetupEventListeners(){
 
 function customClickEvent(e){
     if(e.target.classList.contains("removeExpense")){
-        sendAjaxRequest({"action": "removeExpense", "expenseId": e.target.id}, function(response){
-            console.log(response);
-            loadUserExpenses();
+        sendAjaxRequest({"action": "removeExpense", "expenseId": e.target.id}, function(jsonResponse){
+            console.log(jsonResponse);
+            updateEmployeeExpenses(jsonResponse.html);
         });
     }
 }
@@ -29,19 +28,24 @@ function addNewExpenseFormSubmitEvent(e){
         "description": descriptionInput.value
     };
 
-    sendAjaxRequest(data, function(response){
-        console.log(response);
+    sendAjaxRequest(data, function(jsonResponse){
+        console.log(jsonResponse);
         categoryInput.value = "";
         costInput.value = "";
         descriptionInput.value = "";
-        loadUserExpenses();
+
+        updateEmployeeExpenses(jsonResponse.html);
     });
 }
 
-function loadUserExpenses(){
-    sendAjaxRequest({"action": "getAllExpensesForCurrentUser"}, function(employeeExpensesResponse){
-        //console.log(employeeExpensesResponse);
-        document.getElementById("employeeExpenseData").innerHTML = JSON.parse(employeeExpensesResponse).html;
-        updateTableHeadingIcons();
+function updateEmployeeExpenses(newUserExpenseData){
+    document.getElementById("employeeExpenseData").innerHTML = newUserExpenseData;
+    updateTableHeadingIcons();
+}
+
+
+function reloadEmployeeExpenses() {
+    sendAjaxRequest({"action": "getAllExpensesForCurrentUser"}, function (jsonResponse) {
+        updateUserExpenses(jsonResponse.html);
     });
 }

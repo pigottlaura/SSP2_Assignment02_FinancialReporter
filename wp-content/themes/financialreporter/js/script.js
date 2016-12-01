@@ -55,7 +55,11 @@ function clickEvent(e){
             setCookieValue("orderBy", e.target.id);
             setCookieValue("order", "asc");
         }
-        loadUserExpenses();
+        if(typeof reloadEmployeeExpenses == "function"){
+            reloadEmployeeExpenses();
+        } else if (typeof reloadEmployerExpenses == "function"){
+            reloadEmployerExpenses();
+        }
     }
     if(typeof customClickEvent == "function") {
         customClickEvent(e);
@@ -108,5 +112,7 @@ function sendAjaxRequest(data, callbackFunction){
     xhttp.send(data);
     */
 
-    $.post(adminAjaxURL, data, callbackFunction);
+    $.post(adminAjaxURL, data, function(response){
+        callbackFunction(JSON.parse(response));
+    });
 }

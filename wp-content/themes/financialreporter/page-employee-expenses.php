@@ -21,10 +21,8 @@
                 <select name="category" required>
                     <option selected disabled class="hidden"></option>
                     <?php
-                        $categories = lp_financialReporter_Expense::getAllCategories();
-                        foreach($categories as $key => $category){
-                            echo "<option value='" . $category->id . "'>" . $category->name . "</option>";
-                        }
+                        $allCategories = lp_financialReporter_Expense::getAllCategories();
+                        echo $allCategories->html;
                     ?>
                 </select>
             </label>
@@ -62,7 +60,8 @@
                     </thead>
                     <tbody id="employeeExpenseData">
                         <?php
-                            lp_financialReporter_Expense::getAllExpensesForCurrentUser();
+                            $expenseData = lp_financialReporter_Expense::getAllExpensesForCurrentUser();
+                            echo $expenseData->html;
                         ?>
                     </tbody>
                 </table>

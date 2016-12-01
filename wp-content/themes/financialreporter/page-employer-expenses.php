@@ -2,11 +2,8 @@
 <?php
     // Only logged in administrators can access this page
     if(is_user_logged_in()) {
-        if(lp_financialReporter_User::getUserRole() == "administrator") {
-            if (isset($_GET["action"])) {
-                lp_financialReporter_User::attemptAction($_GET["action"]);
-            }
-        } else{
+        if(lp_financialReporter_User::getUserRole() != "administrator") {
+            // This user is not an administrator
             wp_redirect(home_url("/expenses"));
         }
     } else {
@@ -38,7 +35,7 @@
                             <th>Action</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="employerExpenseData">
                         <?php
                             $expenseData = lp_financialReporter_Expense::getAllExpenses();
                             echo $expenseData->html;

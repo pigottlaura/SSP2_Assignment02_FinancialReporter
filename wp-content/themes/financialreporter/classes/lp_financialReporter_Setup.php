@@ -55,6 +55,10 @@
             add_action("wp_ajax_addExpense", "lp_financialReporter_Setup::ajaxRequest");
             add_action("wp_ajax_removeExpense", "lp_financialReporter_Setup::ajaxRequest");
             add_action("wp_ajax_getAllExpensesForCurrentUser", "lp_financialReporter_Setup::ajaxRequest");
+            add_action("wp_ajax_getAllExpenses", "lp_financialReporter_Setup::ajaxRequest");
+            add_action("wp_ajax_expenseApproval", "lp_financialReporter_Setup::ajaxRequest");
+            add_action("wp_ajax_addNewExpenseCategory", "lp_financialReporter_Setup::ajaxRequest");
+            add_action("wp_ajax_removeExpenseCategory", "lp_financialReporter_Setup::ajaxRequest");
         }
 
         public static function ajaxRequest(){
@@ -112,10 +116,12 @@
             wp_enqueue_style("bootstrap-css-stylesheet", "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css");
             wp_enqueue_style("main-css-stylesheet", get_template_directory_uri() . "/style.css", "bootstrap-css-stylesheet");
             wp_enqueue_script("jquery-js-script", "https://code.jquery.com/jquery-2.2.4.min.js", array(), null, true);
-            if(lp_financialReporter_User::getUserRole() == "administrator"){
-                wp_enqueue_script("employer-js-script", get_template_directory_uri() . "/js/employer-script.js", array(), null, true);
-            } else if(lp_financialReporter_User::getUserRole() == "subscriber"){
-                wp_enqueue_script("employee-js-script", get_template_directory_uri() . "/js/employee-script.js", array(), null, true);
+            if(is_user_logged_in()){
+                if(lp_financialReporter_User::getUserRole() == "administrator"){
+                    wp_enqueue_script("employer-js-script", get_template_directory_uri() . "/js/employer-script.js", array(), null, true);
+                } else if(lp_financialReporter_User::getUserRole() == "subscriber"){
+                    wp_enqueue_script("employee-js-script", get_template_directory_uri() . "/js/employee-script.js", array(), null, true);
+                }
             }
             wp_enqueue_script("main-js-script", get_template_directory_uri() . "/js/script.js", "jquery-js-script", null, true);
 
