@@ -1,7 +1,10 @@
+var adminAjaxURL;
+
 window.onload = function(e){
+    adminAjaxURL = document.getElementById("ajax-url").value;
     setupCookies();
-    setupIcons();
     setupEventListeners();
+    loadUserExpenses();
 }
 
 function setupCookies() {
@@ -13,11 +16,19 @@ function setupCookies() {
     }
 }
 
-function setupIcons(){
+function updateTableHeadingIcons(){
+    console.log("Updating table heading icons");
+    var orderIndicatorIcon = document.getElementById("orderIndicator");
+    if(orderIndicatorIcon != null){
+        var orderIndicatorIconParent = orderIndicatorIcon.parentNode;
+        orderIndicatorIconParent.removeChild(orderIndicatorIcon);
+    }
+
     if(document.getElementsByClassName("orderHeading").length > 0){
         // Table Heading Order By Icon
         var iconArrowDir = getCookieValue("order") == "asc" ? "chevron-up" : "chevron-down";
         var newIcon = document.createElement("span");
+        newIcon.id = "orderIndicator";
         newIcon.className = "glyphicon glyphicon-" + iconArrowDir;
         newIcon.setAttribute("aria-hidden", "true");
         document.getElementById(getCookieValue("orderBy")).classList.add("selected");
@@ -46,7 +57,6 @@ function clickEvent(e){
 
 function addNewExpenseFormSubmitEvent(e){
     e.preventDefault();
-    var adminAjaxURL = e.target.getAttribute("action");
     var data = {
         "action": "addExpense",
         "category": e.target.querySelector("[name=category]").value,
@@ -55,8 +65,17 @@ function addNewExpenseFormSubmitEvent(e){
     };
     //console.log(data);
 
-    sendAjaxRequest(e.target.getAttribute("action"), data, function(response){
+    sendAjaxRequest(data, function(response){
        console.log(response);
+        loadUserExpenses();
+    });
+}
+
+function loadUserExpenses(){
+    sendAjaxRequest({"action": "getAllExpensesForCurrentUser"}, function(employeeExpensesResponse){
+        //console.log(employeeExpensesResponse);
+        document.getElementById("employeeExpenseData").innerHTML = JSON.parse(employeeExpensesResponse).html;
+        updateTableHeadingIcons();
     });
 }
 
@@ -90,9 +109,9 @@ function setCookieValue(name, val){
     document.cookie = name + "=" + val + ";path=/";
 }
 
-function sendAjaxRequest(reqURL, data, callbackFunction, reqMethod){
-    console.log(data);
+function sendAjaxRequest(data, callbackFunction){
     /*
+    console.log(data);
     var method = reqMethod != null ? reqMethod : "GET";
 
     var xhttp = new XMLHttpRequest();
@@ -105,5 +124,5 @@ function sendAjaxRequest(reqURL, data, callbackFunction, reqMethod){
     xhttp.send(data);
     */
 
-    $.post(reqURL, data, callbackFunction);
+    $.post(adminAjaxURL, data, callbackFunction);
 }

@@ -17,6 +17,7 @@
 
             // Ensuring this user is a subscriber i.e. employee
             if(lp_financialReporter_User::getUserRole() == "subscriber") {
+                array_push($response->errors, "This user is a sub");
                 // Checking that the expense data has been provided
                 if (count($expenseData) > 0) {
 
@@ -31,6 +32,7 @@
 
                     // Validating the data passed as part of the expense
                     if ($dataValidated->dataValidated) {
+
                         // Sanitising the data passed as part of the expense
                         $sanitisedData = lp_financialReporter_InputData::sanitiseData($expenseData);
 
@@ -71,7 +73,7 @@
                         global $wpdb;
 
                         // If debug is on, then log all errors from the database (TESTING PURPOSES)
-                        if(CONF_DEBUG){
+                        if(get_option("lp_financialReporter_debug") == "on"){
                             $wpdb->show_errors(true);
                         }
 
@@ -86,6 +88,8 @@
                         $response->successful *= true;
                     }
                 }
+            } else {
+                array_push($response->errors, "This user is not a subscriber");
             }
 
             return $response;
@@ -193,10 +197,16 @@
         }
 
         public static function getAllExpensesForCurrentUser() {
+            $response = (object) array(
+                "successful" => false,
+                "errors" => array(),
+                "html" => ""
+            );
+
             // Initialising the result that will be returned to the caller
             // before checking if this user has permissions to carry out this
             // action or not, so that an empty array can be returned regardless
-            $expenses = array();
+            $userExpenses = array();
 
             // Ensuring this user is a subscriber i.e. employee
             if(lp_financialReporter_User::getUserRole() == "subscriber") {
@@ -213,11 +223,39 @@
                 // tables, based on the category id of the expense matching with the id of a category
                 // in the expense_category table). Ordering the resulting rows as specified by the
                 // values above (either Cookie's or defaults)
-                $expenses = $wpdb->get_results("SELECT lp_financialReporter_expense.*, lp_financialReporter_expense_category.name as 'category_name' FROM lp_financialReporter_expense LEFT JOIN lp_financialReporter_expense_category ON lp_financialReporter_expense.category = lp_financialReporter_expense_category.id WHERE lp_financialReporter_expense.employee_id = " . get_current_user_id() . " ORDER BY " . $sortOrder->orderBy . " " . $sortOrder->order);
+                $userExpenses = $wpdb->get_results("SELECT lp_financialReporter_expense.*, lp_financialReporter_expense_category.name as 'category_name' FROM lp_financialReporter_expense LEFT JOIN lp_financialReporter_expense_category ON lp_financialReporter_expense.category = lp_financialReporter_expense_category.id WHERE lp_financialReporter_expense.employee_id = " . get_current_user_id() . " ORDER BY " . $sortOrder->orderBy . " " . $sortOrder->order);
             }
 
-            // Returning the list of expenses to the caller
-            return $expenses;
+            if(count($userExpenses) > 0){
+                foreach ($userExpenses as $key => $expense){
+                    // Setting up values
+                    $expenseDate = date_create($expense->date_submitted);
+
+                    // Creating Table Row
+                    $response->html .= "<tr>";
+                    $response->html .= "<td>#" . $expense->id . "</td>";
+                    $response->html .= "<td>" . date_format($expenseDate, lp_financialReporter_Expense::$expenseDateFormat) . "</td>";
+                    $response->html .= "<td>" . $expense->category_name . "</td>";
+                    $response->html .= "<td>&euro;" . $expense->cost . "</td>";
+                    if($expense->receipt == null){
+                        $response->html .= "<td>None</td>";
+                    } else {
+                        $response->html .= "<td><a href='" . home_url($expense->receipt) . "' target='_blank'>View</a></td>";
+                    }
+                    $response->html .= "<td>" . $expense->description . "</td>";
+                    $response->html .= "<td>" . $expense->status . "</td>";
+                    if($expense->status == "Pending"){
+                        $response->html .= "<td><a href='./?action=removeExpense&expenseId=" . $expense->id . "'>Remove</a></td>";
+                    } else {
+                        $response->html .= "<td>None</td>";
+                    }
+                    $response->html .= "</tr>";
+                }
+            } else {
+                $response->html .= "<tr><td colspan='8'>You have no previous expense claims</td></tr>";
+            }
+
+            return $response;
         }
 
         public static function getAllCategories() {

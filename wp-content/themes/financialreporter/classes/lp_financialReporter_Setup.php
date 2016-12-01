@@ -6,6 +6,8 @@
         }
 
         public static function pageLoading() {
+            update_option("lp_financialReporter_debug", "on");
+
             self::addThemeSupports();
             self::addActions();
             self::addFilters();
@@ -50,11 +52,21 @@
 
             add_action("wp_enqueue_scripts", "lp_financialReporter_Setup::enqueueCustomScripts");
             
-            add_action("wp_ajax_addExpense", "lp_financialReporter_Setup::ajaxReq");
+            add_action("wp_ajax_addExpense", "lp_financialReporter_Setup::ajaxAddExpense");
+
+            add_action("wp_ajax_getAllExpensesForCurrentUser", "lp_financialReporter_Setup::ajaxGetAllExpensesForCurrentUser");
+
+
         }
 
-        public static function ajaxReq(){
+        public static function ajaxAddExpense(){
             $result = lp_financialReporter_User::attemptAction('addExpense');
+            echo json_encode($result);
+            die();
+        }
+
+        public static function ajaxGetAllExpensesForCurrentUser(){
+            $result = lp_financialReporter_Expense::getAllExpensesForCurrentUser();
             echo json_encode($result);
             die();
         }

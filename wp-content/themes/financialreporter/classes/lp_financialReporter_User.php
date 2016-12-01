@@ -58,6 +58,9 @@
                     lp_financialReporter_Expense::removeCategory($_GET["categoryId"]);
                     break;
                 }
+                default: {
+                    array_push($response->errors, "This is not a recognised action");
+                }
             }
 
             $response->action = $action;
