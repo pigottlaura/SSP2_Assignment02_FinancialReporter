@@ -47,6 +47,16 @@
             }
         }
 
+        public static function deleteReceipt($expenseId){
+            $successful = false;
+            global $wpdb;
+            $expense = $wpdb->get_row("SELECT * FROM lp_financialReporter_expense WHERE id=" . $expenseId . " AND employee_id=" . get_current_user_id());
+            if(count($expense) > 0) {
+                $successful = unlink(ABSPATH . $expense->receipt);
+            }
+            return $successful;
+        }
+
         // Used as a filter (which is added in the Setup class)
         public static function useCustomDir($dirs) {
             $customDir = "/receipts";

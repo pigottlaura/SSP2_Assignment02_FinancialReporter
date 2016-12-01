@@ -110,36 +110,6 @@ function sendAjaxRequest(requestParams, file, callbackFunction){
         }
     };
     xhttp.open("POST", adminAjaxURL + "?" + requestParams, true);
-    //xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xhttp.setRequestHeader("X-Requested-With", "XMLHttpRequest");
     xhttp.send(formData);
-
-    /*
-    xhttp.upload.addEventListener("progress", function(e) {
-        if (e.lengthComputable) {
-            var percentage = Math.round((e.loaded * 100) / e.total);
-            console.log(percentage);
-        }
-    }, false);
-    xhttp.upload.addEventListener("load", function(e){
-        console.log("loaded");
-    }, false);
-    */
-    //xhttp.overrideMimeType('text/plain; charset=x-user-defined-binary');
-
-    /*
-    $.post(adminAjaxURL, data, function(response){
-        callbackFunction(JSON.parse(response));
-    });
-
-
-    if(file != null){
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            console.log(e.target.result);
-            xhttp.send(e.target.result);
-        };
-        reader.readAsBinaryString(document.querySelector('[name=receipt]').files[0]);
-    }
-    */
 }

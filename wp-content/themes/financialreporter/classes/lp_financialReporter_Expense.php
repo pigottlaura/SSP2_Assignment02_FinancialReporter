@@ -109,6 +109,7 @@
                 // Checking that the expenseId has infact been passed as a param
                 // to the query string
                 if (isset($expenseId)) {
+                    $deleteReceipt = lp_financialReporter_File::deleteReceipt($expenseId);
 
                     // Accessing the global wpdb variable, to access the database
                     global $wpdb;
