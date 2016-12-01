@@ -123,7 +123,7 @@
                     // that have already been decided on cannot be deleted)
                     $response->successful = $wpdb->delete(
                         "lp_financialReporter_expense",
-                        array("id" => $_POST["expenseId"], "status" => "Pending"),
+                        array("id" => $expenseId, "status" => "Pending"),
                         array("%d", "%s")
                     );
 

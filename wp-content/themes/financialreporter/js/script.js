@@ -96,8 +96,12 @@ function setCookieValue(name, val){
     document.cookie = name + "=" + val + ";path=/";
 }
 
-function sendAjaxRequest(data, callbackFunction){
-    console.log(data);
+function sendAjaxRequest(requestParams, file, callbackFunction){
+    // REFERENCE - https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications#Example_Uploading_a_user-selected_file
+    var formData = new FormData();
+    if(file != null){
+        formData.append("receipt", file);
+    }
 
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
@@ -105,13 +109,37 @@ function sendAjaxRequest(data, callbackFunction){
             callbackFunction(JSON.parse(this.responseText));
         }
     };
-    xhttp.open("POST", adminAjaxURL, true);
-    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.open("POST", adminAjaxURL + "?" + requestParams, true);
+    //xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xhttp.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-    xhttp.send(data);
+    xhttp.send(formData);
+
+    /*
+    xhttp.upload.addEventListener("progress", function(e) {
+        if (e.lengthComputable) {
+            var percentage = Math.round((e.loaded * 100) / e.total);
+            console.log(percentage);
+        }
+    }, false);
+    xhttp.upload.addEventListener("load", function(e){
+        console.log("loaded");
+    }, false);
+    */
+    //xhttp.overrideMimeType('text/plain; charset=x-user-defined-binary');
+
     /*
     $.post(adminAjaxURL, data, function(response){
         callbackFunction(JSON.parse(response));
     });
+
+
+    if(file != null){
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            console.log(e.target.result);
+            xhttp.send(e.target.result);
+        };
+        reader.readAsBinaryString(document.querySelector('[name=receipt]').files[0]);
+    }
     */
 }

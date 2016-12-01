@@ -44,15 +44,15 @@
                         break;
                     }
                     case "expenseApproval": {
-                        $response = lp_financialReporter_Expense::makeDecisionOnExpense($_POST["expenseId"], $_POST["decision"]);
+                        $response = lp_financialReporter_Expense::makeDecisionOnExpense($_GET["expenseId"], $_GET["decision"]);
                         break;
                     }
                     case "addNewExpenseCategory": {
-                        $response = lp_financialReporter_Expense::addCategory($_POST["categoryName"]);
+                        $response = lp_financialReporter_Expense::addCategory($_GET["categoryName"]);
                         break;
                     }
                     case "removeExpenseCategory": {
-                        $response = lp_financialReporter_Expense::removeCategory($_POST["categoryId"]);
+                        $response = lp_financialReporter_Expense::removeCategory($_GET["categoryId"]);
                         break;
                     }
                     default: {
@@ -63,11 +63,11 @@
             } else if(self::getUserRole() == "subscriber"){
                 switch ($action) {
                     case "addExpense": {
-                        $response = lp_financialReporter_Expense::addExpense($_POST, $_FILES);
+                        $response = lp_financialReporter_Expense::addExpense($_GET, $_FILES);
                         break;
                     }
                     case "removeExpense": {
-                        $response = lp_financialReporter_Expense::removeExpense($_POST["expenseId"]);
+                        $response = lp_financialReporter_Expense::removeExpense($_GET["expenseId"]);
                         break;
                     }
                     case "getAllExpensesForCurrentUser": {

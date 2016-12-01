@@ -8,10 +8,10 @@ function customSetupEventListeners(){
 
 function customClickEvent(e){
     if(e.target.classList.contains("removeExpense")){
-        var requestData = "action=removeExpense";
-        requestData += "&expenseId=" +  e.target.id;
+        var requestParams = "action=removeExpense";
+        requestParams += "&expenseId=" +  e.target.id;
 
-        sendAjaxRequest(requestData, function(jsonResponse){
+        sendAjaxRequest(requestParams, null, function(jsonResponse){
             console.log(jsonResponse);
             updateEmployeeExpenses(jsonResponse.html);
         });
@@ -25,17 +25,17 @@ function addNewExpenseFormSubmitEvent(e){
     var descriptionInput = e.target.querySelector("[name=description]");
     var receiptInput = e.target.querySelector('[name=receipt]');
 
-    var requestData = "action=addExpense";
-    requestData += "&category=" + categoryInput.value;
-    requestData += "&cost=" + costInput.value;
-    requestData += "&description=" + descriptionInput.value;
+    var requestParams = "action=addExpense";
+    requestParams += "&category=" + categoryInput.value;
+    requestParams += "&cost=" + costInput.value;
+    requestParams += "&description=" + descriptionInput.value;
 
-    console.log(receiptInput.files[0]);
-    sendAjaxRequest(requestData, function(jsonResponse){
+    sendAjaxRequest(requestParams, receiptInput.files[0], function(jsonResponse){
         console.log(jsonResponse);
         categoryInput.value = "";
         costInput.value = "";
         descriptionInput.value = "";
+        receiptInput.value = "";
 
         updateEmployeeExpenses(jsonResponse.html);
     });
@@ -48,7 +48,8 @@ function updateEmployeeExpenses(newUserExpenseData){
 
 
 function reloadEmployeeExpenses() {
-    sendAjaxRequest({"action": "getAllExpensesForCurrentUser"}, function (jsonResponse) {
-        updateUserExpenses(jsonResponse.html);
+    var requestParams = "action=getAllExpensesForCurrentUser";
+    sendAjaxRequest(requestParams, null, function (jsonResponse) {
+        updateEmployeeExpenses(jsonResponse.html);
     });
 }

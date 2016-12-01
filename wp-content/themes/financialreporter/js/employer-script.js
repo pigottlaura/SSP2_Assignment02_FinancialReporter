@@ -20,10 +20,10 @@ function addNewExpenseCategoryFormSubmitEvent(e) {
     e.preventDefault();
     var categoryNameInput = e.target.querySelector("[name=categoryName]");
 
-    var requestData = "action=addNewExpenseCategory";
-    requestData += "&categoryName=" + categoryNameInput.value;
+    var requestParams = "action=addNewExpenseCategory";
+    requestParams += "&categoryName=" + categoryNameInput.value;
 
-    sendAjaxRequest(requestData, function(jsonResponse){
+    sendAjaxRequest(requestParams, null, function(jsonResponse){
         console.log(jsonResponse);
         updateEmployerExpenseCategories(jsonResponse.html);
         categoryNameInput.value = "";
@@ -31,21 +31,21 @@ function addNewExpenseCategoryFormSubmitEvent(e) {
 }
 
 function completeExpenseApproval(approvalButton){
-    var requestData = "action=expenseApproval";
-    requestData += "&expenseId=" + approvalButton.id;
-    requestData += "&decision=" + approvalButton.getAttribute("data-decision");
+    var requestParams = "action=expenseApproval";
+    requestParams += "&expenseId=" + approvalButton.id;
+    requestParams += "&decision=" + approvalButton.getAttribute("data-decision");
 
-    sendAjaxRequest(requestData, function(jsonResponse){
+    sendAjaxRequest(requestParams, null, function(jsonResponse){
         console.log(jsonResponse);
         updateEmployerExpenses(jsonResponse.html);
     });
 }
 
 function removeExpenseCategory(removalButton) {
-    var requestData = "action=removeExpenseCategory";
-    requestData += "&categoryId=" + removalButton.id;
+    var requestParams = "action=removeExpenseCategory";
+    requestParams += "&categoryId=" + removalButton.id;
 
-    sendAjaxRequest(requestData, function(jsonResponse){
+    sendAjaxRequest(requestParams, null, function(jsonResponse){
         console.log(jsonResponse);
         updateEmployerExpenseCategories(jsonResponse.html);
     });
@@ -58,7 +58,8 @@ function updateEmployerExpenses(newExpenseData) {
 
 
 function reloadEmployerExpenses() {
-    sendAjaxRequest({"action": "getAllExpenses"}, function (jsonResponse) {
+    var requestParams = "action=getAllExpenses";
+    sendAjaxRequest(requestParams, null, function (jsonResponse) {
         updateEmployerExpenses(jsonResponse.html);
     });
 }

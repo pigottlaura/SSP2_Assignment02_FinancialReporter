@@ -62,7 +62,7 @@
         }
 
         public static function ajaxRequest(){
-            $result = lp_financialReporter_User::attemptAction($_POST["action"]);
+            $result = lp_financialReporter_User::attemptAction($_GET["action"]);
             echo json_encode($result);
             die();
         }
