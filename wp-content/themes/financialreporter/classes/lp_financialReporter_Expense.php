@@ -284,6 +284,8 @@
                 // Cookie's or defaults)
                 $allExpenses = $wpdb->get_results("SELECT lp_financialReporter_expense.*, wp_users.display_name, lp_financialReporter_expense_category.name as 'category_name' FROM lp_financialReporter_expense LEFT JOIN wp_users ON lp_financialReporter_expense.employee_id = wp_users.id LEFT JOIN lp_financialReporter_expense_category ON lp_financialReporter_expense.category = lp_financialReporter_expense_category.id ORDER BY " . $sortOrder->orderBy . " " . $sortOrder->order);
 
+                $response->successful = true;
+
                 // Checking if any expenses were returned from the database
                 if(count($allExpenses) > 0) {
 
@@ -379,51 +381,52 @@
                 // in the expense_category table). Ordering the resulting rows as specified by the
                 // values above (either Cookie's or defaults)
                 $userExpenses = $wpdb->get_results("SELECT lp_financialReporter_expense.*, lp_financialReporter_expense_category.name as 'category_name' FROM lp_financialReporter_expense LEFT JOIN lp_financialReporter_expense_category ON lp_financialReporter_expense.category = lp_financialReporter_expense_category.id WHERE lp_financialReporter_expense.employee_id = " . get_current_user_id() . " ORDER BY " . $sortOrder->orderBy . " " . $sortOrder->order);
+
+                $response->successful = true;
+
+                // Checking if any expenses were returned from the database
+                if(count($userExpenses) > 0){
+
+                    // Looping through all the expenses of the user
+                    foreach ($userExpenses as $key => $expense){
+                        // Creating a new date object, based on the date stored in the database
+                        // for when the expense was first created (so that it can be formated below)
+                        $expenseDate = date_create($expense->date_submitted);
+
+                        // Creating a new table row for each expense. Displaying the expense id, the
+                        // date on which the expense was created (formated using the format declared at the
+                        // top of this class - so that it will be consistent throughout). Checking if this
+                        // expense contains a url to a receipt, and if it does, displaying a link to same.
+                        // Displaying the description and status of the expense (i.e. approved, pending, rejected).
+                        // Checking if this expense is still pending, in which case the user will be provided
+                        // with a delete button (only expenses that have not yet been approved/rejected can be deleted)
+                        $response->html .= "<tr>";
+                        $response->html .= "<td>#" . $expense->id . "</td>";
+                        $response->html .= "<td>" . date_format($expenseDate, self::$expenseDateFormat) . "</td>";
+                        $response->html .= "<td>" . $expense->category_name . "</td>";
+                        $response->html .= "<td>&euro;" . $expense->cost . "</td>";
+                        if($expense->receipt == null){
+                            $response->html .= "<td>None</td>";
+                        } else {
+                            $response->html .= "<td><a href='" . home_url($expense->receipt) . "' target='_blank'>View</a></td>";
+                        }
+                        $response->html .= "<td>" . $expense->description . "</td>";
+                        $response->html .= "<td>" . $expense->status . "</td>";
+                        if($expense->status == "Pending"){
+                            $response->html .= "<td><button id='" . $expense->id . "' class='removeExpense'>Remove</button></td>";
+                        } else {
+                            $response->html .= "<td>None</td>";
+                        }
+                        $response->html .= "</tr>";
+                    }
+                } else {
+                    // As this user has no expenses, then returning a single row to notify them
+                    // that they have no previous claims
+                    $response->html .= "<tr><td colspan='8'>You have no previous expense claims</td></tr>";
+                }
             } else {
                 array_push($response->errors, "This user does not have permission to view individual employee expenses");
             }
-
-            // Checking if any expenses were returned from the database
-            if(count($userExpenses) > 0){
-
-                // Looping through all the expenses of the user
-                foreach ($userExpenses as $key => $expense){
-                    // Creating a new date object, based on the date stored in the database
-                    // for when the expense was first created (so that it can be formated below)
-                    $expenseDate = date_create($expense->date_submitted);
-
-                    // Creating a new table row for each expense. Displaying the expense id, the
-                    // date on which the expense was created (formated using the format declared at the
-                    // top of this class - so that it will be consistent throughout). Checking if this
-                    // expense contains a url to a receipt, and if it does, displaying a link to same.
-                    // Displaying the description and status of the expense (i.e. approved, pending, rejected).
-                    // Checking if this expense is still pending, in which case the user will be provided
-                    // with a delete button (only expenses that have not yet been approved/rejected can be deleted)
-                    $response->html .= "<tr>";
-                    $response->html .= "<td>#" . $expense->id . "</td>";
-                    $response->html .= "<td>" . date_format($expenseDate, self::$expenseDateFormat) . "</td>";
-                    $response->html .= "<td>" . $expense->category_name . "</td>";
-                    $response->html .= "<td>&euro;" . $expense->cost . "</td>";
-                    if($expense->receipt == null){
-                        $response->html .= "<td>None</td>";
-                    } else {
-                        $response->html .= "<td><a href='" . home_url($expense->receipt) . "' target='_blank'>View</a></td>";
-                    }
-                    $response->html .= "<td>" . $expense->description . "</td>";
-                    $response->html .= "<td>" . $expense->status . "</td>";
-                    if($expense->status == "Pending"){
-                        $response->html .= "<td><button id='" . $expense->id . "' class='removeExpense'>Remove</button></td>";
-                    } else {
-                        $response->html .= "<td>None</td>";
-                    }
-                    $response->html .= "</tr>";
-                }
-            } else {
-                // As this user has no expenses, then returning a single row to notify them
-                // that they have no previous claims
-                $response->html .= "<tr><td colspan='8'>You have no previous expense claims</td></tr>";
-            }
-
             // Returning the response object to the caller, which will contain the
             // successful boolean, array of any errors, and any HTML that is to
             // be displayed

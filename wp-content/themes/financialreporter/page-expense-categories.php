@@ -16,6 +16,7 @@
 <div class="row">
     <div class="col-xs-3">
         <h3>Add a New Category</h3>
+        <ul id="addNewCategoryErrors" class="errors"></ul>
         <form id="addNewExpenseCategory">
             <label class="fullWidth">Category Name
                 <input type="text" name="categoryName" required>
@@ -30,21 +31,23 @@
             </div>
         </div>
         <div class="row">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Category Name</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="employerExpenseCategories">
-                        <?php
-                            $categories = lp_financialReporter_Expense::getAllCategories();
-                            echo $categories->html;
-                        ?>
-                    </tbody>
-                </table>
-            </div>
+            <ul id="generalErrors" class="errors"></ul>
+        </div>
+        <div class="row">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Category Name</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="employerExpenseCategories">
+                    <?php
+                        $categories = lp_financialReporter_Expense::getAllCategories();
+                        echo $categories->html;
+                    ?>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>

@@ -17,37 +17,70 @@ function customClickEvent(e){
 }
 
 function addNewExpenseCategoryFormSubmitEvent(e) {
+    // Preventing the form's default action, so that it cannot/
+    // be submitted
     e.preventDefault();
+
+    // Accessing the category name input, so that the value can be
+    // read and sent to the server, and subsequently cleared once
+    // it has been added to the database
     var categoryNameInput = e.target.querySelector("[name=categoryName]");
 
-    var requestParams = "action=addNewExpenseCategory";
-    requestParams += "&categoryName=" + categoryNameInput.value;
+    if(categoryNameInput.value.length > 0) {
+        var requestData = {
+            categoryName: categoryNameInput.value
+        };
 
-    sendAjaxRequest(requestParams, null, function(jsonResponse){
-        console.log(jsonResponse);
-        updateEmployerExpenseCategories(jsonResponse.html);
-        categoryNameInput.value = "";
-    });
+        // Sending an ajax
+        sendAjaxRequest("addNewExpenseCategory", requestData, function(jsonResponse){
+            console.log(jsonResponse);
+
+            // Checking if the action on the server was successful
+            if(jsonResponse.successful){
+                // Passing the response html to update the expense category display
+                // for the employer
+                updateEmployerExpenseCategories(jsonResponse.html);
+
+                // Clearing the value of the category name input
+                categoryNameInput.value = "";
+
+            } else if(jsonResponse.errors.length > 0) {
+                showResponseErrors("addNewCategoryErrors", jsonResponse.errors);
+            }
+        });
+    }
 }
 
 function completeExpenseApproval(approvalButton){
-    var requestParams = "action=expenseApproval";
-    requestParams += "&expenseId=" + approvalButton.id;
-    requestParams += "&decision=" + approvalButton.getAttribute("data-decision");
+    var requestData = {
+        expenseId: approvalButton.id,
+        decision: approvalButton.getAttribute("data-decision")
+    };
 
-    sendAjaxRequest(requestParams, null, function(jsonResponse){
+    sendAjaxRequest("expenseApproval", requestData, function(jsonResponse){
         console.log(jsonResponse);
-        updateEmployerExpenses(jsonResponse.html);
+
+        if(jsonResponse.successful) {
+            updateEmployerExpenses(jsonResponse.html);
+        } else if(jsonResponse.errors.length > 0) {
+            showResponseErrors("generalErrors", jsonResponse.errors);
+        }
     });
 }
 
 function removeExpenseCategory(removalButton) {
-    var requestParams = "action=removeExpenseCategory";
-    requestParams += "&categoryId=" + removalButton.id;
+    var requestData = {
+        categoryId: removalButton.id
+    };
 
-    sendAjaxRequest(requestParams, null, function(jsonResponse){
+    sendAjaxRequest("removeExpenseCategory", requestData, function(jsonResponse){
         console.log(jsonResponse);
-        updateEmployerExpenseCategories(jsonResponse.html);
+
+        if(jsonResponse.successful) {
+            updateEmployerExpenseCategories(jsonResponse.html);
+        } else if(jsonResponse.errors.length > 0) {
+            showResponseErrors("generalErrors", jsonResponse.errors);
+        }
     });
 }
 
@@ -58,9 +91,12 @@ function updateEmployerExpenses(newExpenseData) {
 
 
 function reloadEmployerExpenses() {
-    var requestParams = "action=getAllExpenses";
-    sendAjaxRequest(requestParams, null, function (jsonResponse) {
-        updateEmployerExpenses(jsonResponse.html);
+    sendAjaxRequest("getAllExpenses", {}, function (jsonResponse) {
+        if(jsonResponse.successful) {
+            updateEmployerExpenses(jsonResponse.html);
+        } else if(jsonResponse.errors.length > 0) {
+            showResponseErrors("generalErrors", jsonResponse.errors);
+        }
     });
 }
 

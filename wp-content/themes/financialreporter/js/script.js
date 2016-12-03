@@ -46,7 +46,6 @@ function setupEventListeners(){
 }
 
 function clickEvent(e){
-    getCookieValue("orderBy");
     if(e.target.classList.contains("orderHeading")){
         if(getCookieValue("orderBy") == e.target.id){
             var swapOrder = getCookieValue("order") == "asc" ? "desc" : "asc";
@@ -96,11 +95,13 @@ function setCookieValue(name, val){
     document.cookie = name + "=" + val + ";path=/";
 }
 
-function sendAjaxRequest(requestParams, file, callbackFunction){
-    // REFERENCE - https://developer.mozilla.org/en-US/docs/Using_files_from_web_applications#Example_Uploading_a_user-selected_file
+function sendAjaxRequest(action, requestData, callbackFunction){
+    // Clearing any errors that are currently on screen
+    clearErrors();
+
     var formData = new FormData();
-    if(file != null){
-        formData.append("receipt", file);
+    for(var data in requestData){
+        formData.append(data, requestData[data]);
     }
 
     var xhttp = new XMLHttpRequest();
@@ -109,7 +110,23 @@ function sendAjaxRequest(requestParams, file, callbackFunction){
             callbackFunction(JSON.parse(this.responseText));
         }
     };
-    xhttp.open("POST", adminAjaxURL + "?" + requestParams, true);
+    xhttp.open("POST", adminAjaxURL + "?action=" + action, true);
     xhttp.setRequestHeader("X-Requested-With", "XMLHttpRequest");
     xhttp.send(formData);
+}
+
+function showResponseErrors(ulId, errors) {
+    var displayInUl = document.getElementById(ulId);
+    for(var i=0; i < errors.length; i++){
+        var newErrorLi = document.createElement("li");
+        newErrorLi.textContent = errors[i];
+        displayInUl.appendChild(newErrorLi);
+    }
+}
+
+function clearErrors() {
+    var errorUls = document.getElementsByClassName("errors");
+    for(var i=0; i < errorUls.length; i++) {
+        errorUls[i].innerHTML = "";
+    }
 }

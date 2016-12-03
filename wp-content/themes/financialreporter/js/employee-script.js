@@ -8,12 +8,18 @@ function customSetupEventListeners(){
 
 function customClickEvent(e){
     if(e.target.classList.contains("removeExpense")){
-        var requestParams = "action=removeExpense";
-        requestParams += "&expenseId=" +  e.target.id;
+        var requestData = {
+            expenseId: e.target.id
+        };
 
-        sendAjaxRequest(requestParams, null, function(jsonResponse){
+        sendAjaxRequest("removeExpense", requestData, function(jsonResponse){
             console.log(jsonResponse);
-            updateEmployeeExpenses(jsonResponse.html);
+
+            if(jsonResponse.successful) {
+                updateEmployeeExpenses(jsonResponse.html);
+            } else if(jsonResponse.errors.length > 0) {
+                showResponseErrors("generalErrors", jsonResponse.errors);
+            }
         });
     }
 }
@@ -25,19 +31,26 @@ function addNewExpenseFormSubmitEvent(e){
     var descriptionInput = e.target.querySelector("[name=description]");
     var receiptInput = e.target.querySelector('[name=receipt]');
 
-    var requestParams = "action=addExpense";
-    requestParams += "&category=" + categoryInput.value;
-    requestParams += "&cost=" + costInput.value;
-    requestParams += "&description=" + descriptionInput.value;
+    var requestData = {
+        category: categoryInput.value,
+        cost: costInput.value,
+        description: descriptionInput.value,
+        receipt: receiptInput.files[0]
+    }
 
-    sendAjaxRequest(requestParams, receiptInput.files[0], function(jsonResponse){
+    sendAjaxRequest("addExpense", requestData, function(jsonResponse){
         console.log(jsonResponse);
-        categoryInput.value = "";
-        costInput.value = "";
-        descriptionInput.value = "";
-        receiptInput.value = "";
 
-        updateEmployeeExpenses(jsonResponse.html);
+        if(jsonResponse.successful){
+            categoryInput.value = "";
+            costInput.value = "";
+            descriptionInput.value = "";
+            receiptInput.value = "";
+
+            updateEmployeeExpenses(jsonResponse.html);
+        } else if(jsonResponse.errors.length > 0) {
+            showResponseErrors("addExpenseErrors", jsonResponse.errors);
+        }
     });
 }
 
@@ -48,8 +61,12 @@ function updateEmployeeExpenses(newUserExpenseData){
 
 
 function reloadEmployeeExpenses() {
-    var requestParams = "action=getAllExpensesForCurrentUser";
-    sendAjaxRequest(requestParams, null, function (jsonResponse) {
-        updateEmployeeExpenses(jsonResponse.html);
+    sendAjaxRequest("getAllExpensesForCurrentUser", {}, function (jsonResponse) {
+        console.log(jsonResponse);
+        if(jsonResponse.successful) {
+            updateEmployeeExpenses(jsonResponse.html);
+        } else if(jsonResponse.errors.length > 0) {
+            showResponseErrors("generalErrors", jsonResponse.errors);
+        }
     });
 }

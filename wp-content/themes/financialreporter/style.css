@@ -24,6 +24,10 @@ nav ul li, ul#main-sidebar li {
     flex: 1;
 }
 
+.errors {
+    color: #FF0000;
+}
+
 form label, form input:not([type="checkbox"]), form select, form textarea {
     display: inline-block;
     width: 49%;
