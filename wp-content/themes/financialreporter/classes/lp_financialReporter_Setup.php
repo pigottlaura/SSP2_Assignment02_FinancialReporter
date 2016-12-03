@@ -75,6 +75,8 @@
         }
 
         public static function addFilters() {
+            add_filter("login_url", "lp_financialReporter_User::useCustomLogin");
+
             // Creaing a filter, through which all uploads from this theme will be passed,
             // so that a custom directory can be specified, using the File classs i.e. so
             // all receipts can be uploaded to the "receipts" folder of the "uploads" directory
