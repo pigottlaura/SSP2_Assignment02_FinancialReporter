@@ -13,8 +13,11 @@ function customClickEvent(e){
         completeExpenseApproval(e.target);
     } else if(e.target.classList.contains("removeExpenseCategory")) {
         removeExpenseCategory(e.target);
+    } else if(e.target.id == "saveEmployerSettings") {
+        saveEmployerSettings();
     }
 }
+
 
 function addNewExpenseCategoryFormSubmitEvent(e) {
     // Preventing the form's default action, so that it cannot/
@@ -78,6 +81,21 @@ function removeExpenseCategory(removalButton) {
 
         if(jsonResponse.successful) {
             updateEmployerExpenseCategories(jsonResponse.html);
+        } else if(jsonResponse.errors.length > 0) {
+            showResponseErrors("generalErrors", jsonResponse.errors);
+        }
+    });
+}
+
+function saveEmployerSettings() {
+    var requestData = {
+        deleteDatabaseOnThemeDeactivate: document.querySelector("[name=deleteDatabaseOnThemeDeactivate]").checked
+    }
+    console.log(requestData);
+    sendAjaxRequest("saveEmployerSettings", requestData, function(jsonResponse){
+        console.log(jsonResponse);
+        if(jsonResponse.successful) {
+            //updateEmployerSettings(jsonResponse.html);
         } else if(jsonResponse.errors.length > 0) {
             showResponseErrors("generalErrors", jsonResponse.errors);
         }

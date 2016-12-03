@@ -6,7 +6,7 @@
         }
 
         public static function pageLoading() {
-            update_option("lp_financialReporter_debug", "on");
+
 
             self::addThemeSupports();
             self::addActions();
@@ -16,6 +16,8 @@
         // Function which is invoked by the "after_switch_theme" action
         // i.e. every time the theme is activated
         public static function activated() {
+            self::setupThemeOptions();
+
             // Checking that all database tables required by this theme exist
             // (and if not, then creating them) using the DatabaseTables class
             lp_financialReporter_DatabaseTables::checkRequiredTables();
@@ -34,6 +36,10 @@
             lp_financialReporter_Pages::removeThemePages();
 
             self::deleteNavMenu();
+
+            lp_financialReporter_DatabaseTables::deleteThemeTables();
+
+            self::deleteThemeOptions();
         }
 
         // Adding action hooks every time a page is loaded, to detect actions such
@@ -59,6 +65,7 @@
             add_action("wp_ajax_expenseApproval", "lp_financialReporter_Setup::ajaxRequest");
             add_action("wp_ajax_addNewExpenseCategory", "lp_financialReporter_Setup::ajaxRequest");
             add_action("wp_ajax_removeExpenseCategory", "lp_financialReporter_Setup::ajaxRequest");
+            add_action("wp_ajax_saveEmployerSettings", "lp_financialReporter_Setup::ajaxRequest");
         }
 
         public static function ajaxRequest(){
@@ -116,7 +123,6 @@
         public static function enqueueCustomScripts(){
             wp_enqueue_style("bootstrap-css-stylesheet", "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css");
             wp_enqueue_style("main-css-stylesheet", get_template_directory_uri() . "/style.css", "bootstrap-css-stylesheet");
-            wp_enqueue_script("jquery-js-script", "https://code.jquery.com/jquery-2.2.4.min.js", array(), null, true);
             if(is_user_logged_in()){
                 if(lp_financialReporter_User::getUserRole() == "administrator"){
                     wp_enqueue_script("employer-js-script", get_template_directory_uri() . "/js/employer-script.js", array(), null, true);
@@ -147,7 +153,19 @@
 
         private static function deleteNavMenu(){
             wp_delete_nav_menu(get_option("lp_financialReporter_navMenuId"));
+        }
+
+        private static function setupThemeOptions() {
+            update_option("lp_financialReporter_debug", "on");
+            update_option("lp_financialReporter_deleteDatabaseOnThemeDeactivate", "false");
+        }
+
+        private static function deleteThemeOptions() {
+            delete_option("lp_financialReporter_deleteDatabaseOnThemeDeactivate");
+            delete_option("lp_financialReporter_debug");
             delete_option("lp_financialReporter_navMenuId");
+            delete_option("lp_financialReporter_allPages");
+            delete_option("lp_financialReporter_excludePagesFromMenu");
         }
     }
 ?>

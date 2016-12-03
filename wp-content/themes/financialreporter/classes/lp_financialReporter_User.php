@@ -55,6 +55,10 @@
                         $response = lp_financialReporter_Expense::removeCategory($_POST["categoryId"]);
                         break;
                     }
+                    case "saveEmployerSettings": {
+                        $response = self::saveEmployerSettings($_POST);
+                        break;
+                    }
                     default: {
                         array_push($response->errors, "This is not a recognised action");
                         break;
@@ -152,6 +156,30 @@
             }
 
             // Returning the response object to the caller
+            return $response;
+        }
+
+        public static function saveEmployerSettings($postData) {
+            $response = (object) array(
+                "successful" => false,
+                "errors" => array()
+            );
+
+            $validateData = lp_financialReporter_InputData::validateData($postData, array());
+
+            if($validateData->dataValidated){
+                $santisedData = lp_financialReporter_InputData::sanitiseData($_POST);
+
+                if(isset($santisedData["deleteDatabaseOnThemeDeactivate"])) {
+                    $response->successful = update_option("lp_financialReporter_deleteDatabaseOnThemeDeactivate", $santisedData["deleteDatabaseOnThemeDeactivate"]);
+                } else {
+                    array_push($response->errors, "No value was given for whether or not the expense databases should be deleted upon theme deactivation");
+                }
+            } else {
+                foreach($validateData->errors as $error){
+                    array_push($response->errors, $error);
+                }
+            }
             return $response;
         }
     }

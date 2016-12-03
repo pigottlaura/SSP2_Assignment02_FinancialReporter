@@ -20,7 +20,20 @@
             </div>
         </div>
         <div class="row">
-            <ul id="generalErrors" class="errors"></ul>
+            <div class="col-xs-7">
+                <ul id="generalErrors" class="errors"></ul>
+            </div>
+            <div class="col-xs-5 text-right">
+                <label>
+                    Delete all expenses on theme deactivation:
+                    <input type="checkbox" name="deleteDatabaseOnThemeDeactivate" <?php if(get_option("lp_financialReporter_deleteDatabaseOnThemeDeactivate") == "true") { echo "checked='checked'";} ?>>
+                </label>
+
+                <button id="saveEmployerSettings">Save</button>
+            </div>
+        </div>
+        <div class="row">
+
         </div>
         <div class="row">
             <table>

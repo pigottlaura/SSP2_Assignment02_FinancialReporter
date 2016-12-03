@@ -76,8 +76,6 @@
             foreach($themePages as $key => $pageId) {
                 wp_delete_post($pageId, true);
             }
-            delete_option("lp_financialReporter_allPages");
-            delete_option("lp_financialReporter_excludePagesFromMenu");
         }
 
         public static function excludeFromMenu($items, $menu, $args) {

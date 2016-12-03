@@ -57,6 +57,18 @@
             return $successful;
         }
 
+        public static function deleteAllReceipts() {
+            $successful = false;
+            global $wpdb;
+            $expensesWithReceipts = $wpdb->get_results("SELECT * FROM lp_financialReporter_expense WHERE receipt IS NOT NULL");
+            if(count($expensesWithReceipts) > 0) {
+                foreach($expensesWithReceipts as $expense){
+                    unlink(ABSPATH . $expense->receipt);
+                }
+            }
+            return $successful;
+        }
+
         // Used as a filter (which is added in the Setup class)
         public static function useCustomDir($dirs) {
             $customDir = "/receipts";

@@ -1,5 +1,9 @@
 <?php
     class lp_financialReporter_DatabaseTables {
+        // Specifying which tables are required for this theme, as an array which will be looped through
+        // to create them or delete them
+        private static $requiredTables = array('lp_financialReporter_expense', 'lp_financialReporter_expense_category');
+
         function __construct() {
             // Not allowing this class to be instantiated
             throw new Exception("Cannot instantiate this class. Please use the static methods provided instead.");
@@ -11,19 +15,27 @@
             // Accessing the global wpdb variable, to access the database
             global $wpdb;
 
-            // Specifying which tables are required for this theme, as an array which will be looped through
-            // to create them
-            $requiredTables = array('lp_financialReporter_expense', 'lp_financialReporter_expense_category');
-
             // Querying the tables schema, to get any results for databases with the same names
             // as those specified in the array above (by imploding the array into a list of strings seperated by ","
-            $existingExpenseTables = $wpdb->get_results("SELECT * FROM INFORMATION_SCHEMA.tables WHERE TABLE_NAME IN ('" . implode("', '", $requiredTables) . "');");
+            $existingExpenseTables = $wpdb->get_results("SELECT * FROM INFORMATION_SCHEMA.tables WHERE TABLE_NAME IN ('" . implode("', '", self::$requiredTables) . "');");
 
             // Checking if the number of databases returned from the query, matches
             // the number that was specified as required above
-            if(count($existingExpenseTables) != count($requiredTables)){
+            if(count($existingExpenseTables) != count(self::$requiredTables)){
                 // These tables do not already exist, so creating them
                 self::createRequiredTables();
+            }
+        }
+
+        public static function deleteThemeTables() {
+            if(get_option("lp_financialReporter_deleteDatabaseOnThemeDeactivate") == "true") {
+                global $wpdb;
+
+                lp_financialReporter_File::deleteAllReceipts();
+
+                foreach (self::$requiredTables as $tableName) {
+                    $success = $wpdb->query("DROP TABLE " . $tableName);
+                }
             }
         }
 
