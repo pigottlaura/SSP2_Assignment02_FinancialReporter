@@ -83,6 +83,20 @@
                             }
                         }
 
+                        if($receiptPath == null) {
+                            // Since no receipt was uploaded with this expense, checking if it is a requirement
+                            // i.e. has the employer specified that a receipt must be included for all expenses
+                            if(get_option("lp_financialReporter_receiptsRequiredForAllExpenses") == "true") {
+                                // Since a receipt is a requirement, and none was supplied, adding this
+                                // as an error to the response object
+                                array_push($response->errors, "A receipt must be supplied for all expenses");
+
+                                // Returning the response object to the caller, as this expense cannot be added
+                                // to the database without a receipt
+                                return $response;
+                            }
+                        }
+
                         // Accessing the global wpdb variable, to access the database
                         global $wpdb;
 

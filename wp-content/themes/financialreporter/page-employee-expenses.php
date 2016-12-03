@@ -30,8 +30,8 @@
             <label>Cost (€)
                 <input type="number" name="cost" min="0" step="0.01" required>
             </label>
-            <label class="fullWidth">Attach Receipt (optional)
-                <input type="file" name="receipt">
+            <label class="fullWidth">Attach Receipt <?php if(get_option("lp_financialReporter_receiptsRequiredForAllExpenses") == "false") { echo "(optional)"; } ?>
+                <input type="file" name="receipt" <?php if(get_option("lp_financialReporter_receiptsRequiredForAllExpenses") == "true") { echo "required"; } ?>>
             </label>
             <label class="fullWidth">Description
                 <textarea name="description" rows="4" required></textarea>

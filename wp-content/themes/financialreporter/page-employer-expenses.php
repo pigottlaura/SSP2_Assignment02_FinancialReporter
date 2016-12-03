@@ -28,8 +28,12 @@
                     Delete all expenses on theme deactivation:
                     <input type="checkbox" name="deleteDatabaseOnThemeDeactivate" <?php if(get_option("lp_financialReporter_deleteDatabaseOnThemeDeactivate") == "true") { echo "checked='checked'";} ?>>
                 </label>
-
-                <button id="saveEmployerSettings">Save</button>
+                <label>
+                    Require receipts to be uploaded with all expenses:
+                    <input type="checkbox" name="receiptsRequiredForAllExpenses" <?php if(get_option("lp_financialReporter_receiptsRequiredForAllExpenses") == "true") { echo "checked='checked'";} ?>>
+                </label>
+                <br>
+                <button id="saveEmployerSettings">Update Settings</button>
             </div>
         </div>
         <div class="row">

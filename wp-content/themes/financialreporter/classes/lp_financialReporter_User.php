@@ -175,6 +175,12 @@
                 } else {
                     array_push($response->errors, "No value was given for whether or not the expense databases should be deleted upon theme deactivation");
                 }
+
+                if(isset($santisedData["receiptsRequiredForAllExpenses"])) {
+                    $response->successful = update_option("lp_financialReporter_receiptsRequiredForAllExpenses", $santisedData["receiptsRequiredForAllExpenses"]);
+                } else {
+                    array_push($response->errors, "No value was given for whether or not receipts are required for all expenses");
+                }
             } else {
                 foreach($validateData->errors as $error){
                     array_push($response->errors, $error);

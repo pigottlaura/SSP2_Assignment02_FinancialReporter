@@ -89,7 +89,8 @@ function removeExpenseCategory(removalButton) {
 
 function saveEmployerSettings() {
     var requestData = {
-        deleteDatabaseOnThemeDeactivate: document.querySelector("[name=deleteDatabaseOnThemeDeactivate]").checked
+        deleteDatabaseOnThemeDeactivate: document.querySelector("[name=deleteDatabaseOnThemeDeactivate]").checked,
+        receiptsRequiredForAllExpenses: document.querySelector("[name=receiptsRequiredForAllExpenses]").checked
     }
     console.log(requestData);
     sendAjaxRequest("saveEmployerSettings", requestData, function(jsonResponse){

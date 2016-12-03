@@ -160,6 +160,7 @@
         private static function setupThemeOptions() {
             update_option("lp_financialReporter_debug", "on");
             update_option("lp_financialReporter_deleteDatabaseOnThemeDeactivate", "false");
+            update_option("lp_financialReporter_receiptsRequiredForAllExpenses", "false");
         }
 
         private static function deleteThemeOptions() {
