@@ -28,7 +28,8 @@
                     );
                     wp_login_form($loginFormArgs);
                 ?>
-                or <a href="<?php echo home_url("/user-register"); ?>">Register</a>
+                <a href="<?php echo home_url("/user-register"); ?>">Register</a> or
+                <a href="<?php echo wp_lostpassword_url(home_url("/user-login")); ?>">Lost Password My Password</a>
             </div>
         </div>
     </div>

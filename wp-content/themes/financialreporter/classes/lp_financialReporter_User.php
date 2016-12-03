@@ -149,7 +149,7 @@
                     } else {
                         // Sending a new user notification to the user
                         wp_new_user_notification($userId, null, "both");
-                        
+
                         $response->email = $sanitisedData["email"];
                     }
                 }
