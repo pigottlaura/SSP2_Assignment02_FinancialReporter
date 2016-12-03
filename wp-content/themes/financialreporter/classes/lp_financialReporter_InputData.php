@@ -11,7 +11,7 @@
             // Creating a temporary object, to store the result, and any errors
             // of, the attempt to validate the data, based on the options supplied
             $result = (object) array(
-                "dataValidated" => true,
+                "successful" => true,
                 "errors" => array()
             );
 
@@ -22,25 +22,30 @@
 
                 if(isset($options["required"]) && in_array($inputName, $options["required"])){
                     if(isset($inputValue) == false || strlen($inputValue) == 0){
-                        $result->dataValidated = false;
                         array_push($result->errors, $prettyInputName . " is a required field");
                     }
                 }
 
                 if(isset($options["email"]) && in_array($inputName, $options["email"])){
                     if(is_email($inputValue) == false){
-                        $result->dataValidated = false;
                         array_push($result->errors, $prettyInputName . " must contain a valid email address");
                     }
                 }
 
                 if(isset($options["number"]) && in_array($inputName, $options["number"])){
                     if(is_numeric($inputValue) == false){
-                        $result->dataValidated = false;
                         array_push($result->errors, $prettyInputName . " must contain a valid number");
                     }
                 }
+
+                if(isset($options["boolean"]) && in_array($inputName, $options["boolean"])){
+                    if(is_bool($inputValue) == false){
+                        array_push($result->errors, $prettyInputName . " must be true or false");
+                    }
+                }
             }
+
+            $result->successful = count($result->errors > 0) ? false : true;
 
             return $result;
         }

@@ -122,6 +122,8 @@
             lp_financialReporter_Expense::removeAllExpensesForUser($userId);
         }
 
+        // Public method, invoked when the scripts are being added to a page (based on
+        // an action defined above).
         public static function enqueueCustomScripts(){
             wp_enqueue_style("bootstrap-css-stylesheet", "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css");
             wp_enqueue_style("main-css-stylesheet", get_template_directory_uri() . "/style.css", "bootstrap-css-stylesheet");
@@ -153,16 +155,19 @@
             update_option("lp_financialReporter_navMenuId", $navMenuId);
         }
 
+        // Public method, invoked when the theme is being deactivated
         private static function deleteNavMenu(){
             wp_delete_nav_menu(get_option("lp_financialReporter_navMenuId"));
         }
 
+        // Public method, invoked when the theme is being activated
         private static function setupThemeOptions() {
             update_option("lp_financialReporter_debug", "on");
             update_option("lp_financialReporter_deleteDatabaseOnThemeDeactivate", "false");
             update_option("lp_financialReporter_receiptsRequiredForAllExpenses", "false");
         }
 
+        // Public method, invoked when the theme is being deactivated
         private static function deleteThemeOptions() {
             delete_option("lp_financialReporter_deleteDatabaseOnThemeDeactivate");
             delete_option("lp_financialReporter_debug");

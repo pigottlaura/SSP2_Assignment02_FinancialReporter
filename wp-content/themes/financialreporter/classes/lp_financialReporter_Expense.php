@@ -10,7 +10,7 @@
         }
 
         // Publicly used method, invoked when an AJAX request is received
-        public static function addExpense($expenseData, $files=null){
+        public static function addExpense($postData, $files=null){
             // Creating a response object, which will be returned to the caller.
             // Setting up the default values, so that if none of the tasks in
             // this class are successful, the response will reflect this.
@@ -24,104 +24,95 @@
 
             // Ensuring this user is a subscriber i.e. employee
             if(lp_financialReporter_User::getUserRole() == "subscriber") {
+                // Validating the data provided by the user i.e. to ensure that it is
+                // in the expected format, and that all required fields have been supplied
+                $dataValidated = lp_financialReporter_InputData::validateData($postData, array(
+                    "required" => array("category", "cost", "description"),
+                    "number" => array("category", "cost")
+                ));
 
-                // Checking that the expense data has been provided
-                if (count($expenseData) > 0) {
+                // Checking if the data validation was successful
+                if ($dataValidated->successful) {
 
-                    // Validating the data provided by the user i.e. to ensure that it is
-                    // in the expected format
-                    $dataValidated = lp_financialReporter_InputData::validateData($expenseData, array(
-                        "required" => array("category", "cost", "description"),
-                        "number" => array("category", "cost")
+                    // Sanitising the data passed as part of the expense
+                    $sanitisedData = lp_financialReporter_InputData::sanitiseData($postData);
+
+                    // Creating a default of null for the receipt path. This may remain
+                    // num if 1) no files were uploaded along with this request or
+                    // 2) the file fails to save to the server
+                    $receiptPath = null;
+
+                    // Checking if the files array contains a "receipt" parameter
+                    // i.e. which will reference the file the user has uploaded with the
+                    // expense claim, and that the size of the file is greater than 0
+                    // i.e. that a file was actually included in the submission
+                    if(isset($files["receipt"]) && $files["receipt"]["size"] > 0){
+
+                        // Attempting the save the file using the saveFile static method
+                        // of the lp_financialReporter_File class. Storing the result in a
+                        // temporary variable
+                        $saveFile = lp_financialReporter_File::saveFile($files["receipt"]);
+
+                        // Checking if any errors were returned from the saveFile attempt
+                        if(count($saveFile->errors) > 0) {
+                            // Storing these errors in the response error object
+                            foreach ($saveFile->errors as $key => $error) {
+                                array_push($response->errors, $error);
+
+                            }
+                            // Setting the response's success to false
+                            $response->successful = false;
+                        }
+
+                        // Checking if a file path was returned from the saveFile attempt
+                        if(isset($saveFile->filepath)) {
+                            // If so, then storing it in the temporary receiptPath variable,
+                            // so that it can be passed to the database and stored in the receipt
+                            // column of the expense
+                            $receiptPath = $saveFile->filepath;
+                        }
+                    }
+
+                    if($receiptPath == null) {
+                        // Since no receipt was uploaded with this expense, checking if it is a requirement
+                        // i.e. has the employer specified that a receipt must be included for all expenses
+                        if(get_option("lp_financialReporter_receiptsRequiredForAllExpenses") == "true") {
+                            // Since a receipt is a requirement, and none was supplied, adding this
+                            // as an error to the response object
+                            array_push($response->errors, "A receipt must be supplied for all expenses");
+
+                            // Returning the response object to the caller, as this expense cannot be added
+                            // to the database without a receipt
+                            return $response;
+                        }
+                    }
+
+                    // Accessing the global wpdb variable, to access the database
+                    global $wpdb;
+
+                    // Inserting the new expense into the expense table, using a prepared statement.
+                    // Passing the category as an int (no decimal places), and the cost as a 2 decimal
+                    // float value. Passing the receiptPath variable, whether or not a receipt
+                    // was uploaded, as this will have defaulted to null if no file was successfully
+                    // loaded, which is an acceptable value for this column. Determining whether or
+                    // not this insert was successful based on the response returned from the query,
+                    // and storing this in the response's success boolean
+                    $response->successful = $wpdb->query($wpdb->prepare(
+                        "INSERT INTO lp_financialReporter_expense (employee_id, category, receipt, cost, description) VALUES(%d, %d, %s, %d, %s)",
+                        array(get_current_user_id(), number_format($sanitisedData['category'], 0), $receiptPath, number_format($sanitisedData['cost'], 2), $sanitisedData['description'])
                     ));
 
+                    // Setting the html of the response object to be equal to all of the
+                    // expenses of the current user (which will now contain the new
+                    // addition made above. This is so the user won't have to make an additional
+                    // AJAX request in order to update their expenses on screen
+                    $response->html = self::getUpdatedExpensesForCurrentUser();
+
+                } else {
                     // Looping through any errors returned by the data validation, and adding
                     // them to the response's errors array
                     foreach($dataValidated->errors as $key => $error){
                         array_push($response->errors, $error);
-                    }
-
-                    // Checking if the data validation was successful
-                    if ($dataValidated->dataValidated) {
-
-                        // Sanitising the data passed as part of the expense
-                        $sanitisedData = lp_financialReporter_InputData::sanitiseData($expenseData);
-
-                        // Creating a default of null for the receipt path. This may remain
-                        // num if 1) no files were uploaded along with this request or
-                        // 2) the file fails to save to the server
-                        $receiptPath = null;
-
-                        // Checking if the files array contains a "receipt" parameter
-                        // i.e. which will reference the file the user has uploaded with the
-                        // expense claim, and that the size of the file is greater than 0
-                        // i.e. that a file was actually included in the submission
-                        if(isset($files["receipt"]) && $files["receipt"]["size"] > 0){
-
-                            // Attempting the save the file using the saveFile static method
-                            // of the lp_financialReporter_File class. Storing the result in a
-                            // temporary variable
-                            $saveFile = lp_financialReporter_File::saveFile($files["receipt"]);
-
-                            // Checking if any errors were returned from the saveFile attempt
-                            if(count($saveFile->errors) > 0) {
-                                // Storing these errors in the response error object
-                                foreach ($saveFile->errors as $key => $error) {
-                                    array_push($response->errors, $error);
-
-                                }
-                                // Setting the response's success to false
-                                $response->successful = false;
-                            }
-
-                            // Checking if a file path was returned from the saveFile attempt
-                            if(isset($saveFile->filepath)) {
-                                // If so, then storing it in the temporary receiptPath variable,
-                                // so that it can be passed to the database and stored in the receipt
-                                // column of the expense
-                                $receiptPath = $saveFile->filepath;
-                            }
-                        }
-
-                        if($receiptPath == null) {
-                            // Since no receipt was uploaded with this expense, checking if it is a requirement
-                            // i.e. has the employer specified that a receipt must be included for all expenses
-                            if(get_option("lp_financialReporter_receiptsRequiredForAllExpenses") == "true") {
-                                // Since a receipt is a requirement, and none was supplied, adding this
-                                // as an error to the response object
-                                array_push($response->errors, "A receipt must be supplied for all expenses");
-
-                                // Returning the response object to the caller, as this expense cannot be added
-                                // to the database without a receipt
-                                return $response;
-                            }
-                        }
-
-                        // Accessing the global wpdb variable, to access the database
-                        global $wpdb;
-
-                        // If debug is on, then log all errors from the database (TESTING PURPOSES)
-                        if(get_option("lp_financialReporter_debug") == "on"){
-                            $wpdb->show_errors(true);
-                        }
-
-                        // Inserting the new expense into the expense table, using a prepared statement.
-                        // Passing the category as an int (no decimal places), and the cost as a 2 decimal
-                        // float value. Passing the receiptPath variable, whether or not a receipt
-                        // was uploaded, as this will have defaulted to null if no file was successfully
-                        // loaded, which is an acceptable value for this column. Determining whether or
-                        // not this insert was successful based on the response returned from the query,
-                        // and storing this in the response's success boolean
-                        $response->successful = $wpdb->query($wpdb->prepare(
-                            "INSERT INTO lp_financialReporter_expense (employee_id, category, receipt, cost, description) VALUES(%d, %d, %s, %d, %s)",
-                            array(get_current_user_id(), number_format($sanitisedData['category'], 0), $receiptPath, number_format($sanitisedData['cost'], 2), $sanitisedData['description'])
-                        ));
-
-                        // Setting the html of the response object to be equal to all of the
-                        // expenses of the current user (which will now contain the new
-                        // addition made above. This is so the user won't have to make an additional
-                        // AJAX request in order to update their expenses on screen
-                        $response->html = self::getUpdatedExpensesForCurrentUser();
                     }
                 }
             } else {
@@ -136,7 +127,7 @@
 
         // Publicly used method, invoked when an AJAX request is received.
         // Allowing employees to remove expenses that have not yet been approved
-        public static function removeExpense($expenseId){
+        public static function removeExpense($postData){
             // Creating a response object, which will be returned to the caller.
             // Setting up the default values, so that if none of the tasks in
             // this class are successful, the response will reflect this.
@@ -147,23 +138,27 @@
                 "errors" => array(),
                 "html" => ""
             );
-            
+
             // Ensuring this user is a subscriber i.e. employee
             if(lp_financialReporter_User::getUserRole() == "subscriber") {
+                // Validating the data provided by the user i.e. to ensure that it is
+                // in the expected format, and that all required fields have been supplied
+                $dataValidated = lp_financialReporter_InputData::validateData($postData, array(
+                    "required" => "expenseId",
+                    "number" => "expenseId"
+                ));
 
-                // Checking that the expenseId has infact been passed as a param
-                // to the query string
-                if (isset($expenseId)) {
-                    // Deleting the receipt associated with this expense (if there is one)
-                    lp_financialReporter_File::deleteReceipt($expenseId);
+                // Checking if the data validation was successful
+                if ($dataValidated->successful) {
 
                     // Accessing the global wpdb variable, to access the database
                     global $wpdb;
 
-                    // If debug is on, then log all errors from the database (TESTING PURPOSES)
-                    if(get_option("lp_financialReporter_debug") == "on"){
-                        $wpdb->show_errors(true);
-                    }
+                    // Sanitising the data passed to insure it contains no unexpected data
+                    $sanitisedData = lp_financialReporter_InputData::sanitiseData($postData);
+
+                    // Deleting the receipt associated with this expense (if there is one)
+                    lp_financialReporter_File::deleteReceipt($sanitisedData["expenseId"]);
 
                     // Deleting this expense, double checking that not only does the
                     // id match, but that the status is defiantly pending (as expenses
@@ -172,7 +167,7 @@
                     // status is a string
                     $response->successful = $wpdb->delete(
                         "lp_financialReporter_expense",
-                        array("id" => $expenseId, "status" => "Pending"),
+                        array("id" => $sanitisedData["expenseId"], "status" => "Pending"),
                         array("%d", "%s")
                     );
 
@@ -181,6 +176,13 @@
                     // whcih was deleted above. This is so the user won't have to make an additional
                     // AJAX request in order to update their expenses on screen
                     $response->html = self::getUpdatedExpensesForCurrentUser();
+
+                } else {
+                    // Looping through any errors that may have been returned from the data
+                    // validation, and adding them to the response errors array
+                    foreach ($dataValidated->errors as $key => $error) {
+                        array_push($response->errors, $error);
+                    }
                 }
             } else {
                 array_push($response->errors, "This user does not have permission to delete an expense");
@@ -205,7 +207,7 @@
         }
 
         // Publicly used method, invoked when an AJAX request is received
-        public static function makeDecisionOnExpense($expenseId, $decision) {
+        public static function makeDecisionOnExpense($postData) {
             // Creating a response object, which will be returned to the caller.
             // Setting up the default values, so that if none of the tasks in
             // this class are successful, the response will reflect this.
@@ -219,25 +221,27 @@
 
             // Ensuring this user is a administrator i.e. employer
             if(lp_financialReporter_User::getUserRole() == "administrator") {
+                // Validating the data provided by the user i.e. to ensure that it is
+                // in the expected format, and that all required fields have been supplied
+                $dataValidated = lp_financialReporter_InputData::validateData($postData, array(
+                    "required" => "expenseId", "decision",
+                    "number" => "expenseId", "decision"
+                ));
 
-                // Ensuring that both the expense id and decision value were passed
-                // to the query string
-                if (isset($expenseId) && isset($decision)) {
-
+                // Checking if data validation was successful
+                if($dataValidated->successful) {
                     // Accessing the global wpdb variable, to access the database
                     global $wpdb;
+
+                    // Sanitising the data passed to insure it contains no unexpected data
+                    $sanitisedData = lp_financialReporter_InputData::sanitiseData($postData);
 
                     // Determing the employer's decision on this expense, based on a
                     // 0 or 1 value, passed as a param to the query string. The purpose
                     // of this is so no other value could ever be passed, as the status
                     // column of the expense table is of type ENUM, and can only accept
                     // "Rejected", "Approved" or it's default of "Pending"
-                    $expenseDecision = $decision == 0 ? "Rejected" : "Approved";
-
-                    // If debug is on, then log all errors from the database (TESTING PURPOSES)
-                    if(get_option("lp_financialReporter_debug") == "on"){
-                        $wpdb->show_errors(true);
-                    }
+                    $expenseDecision = $sanitisedData["decision"] == 1 ? "Approved" : "Rejected";
 
                     // Updating the expense's status and decision date, based on the
                     // decising specified by the employer ie. Rejected or Approved, as
@@ -246,7 +250,7 @@
                     // strings, and that the id used to identify the row is a number
                     $response->successful = $wpdb->update("lp_financialReporter_expense",
                         array("status" => $expenseDecision, "decision_date" => date("Y-m-d H:i:s")),
-                        array("id" => $expenseId),
+                        array("id" => $sanitisedData["expenseId"]),
                         array("%s", "%s"),
                         array("%d")
                     );
@@ -256,6 +260,12 @@
                     // of the expense decision made above. This is so the user won't have to
                     // make an additional AJAX request in order to update their expenses on screen
                     $response->html = self::getUpdatedExpenses();
+                } else {
+                    // Looping through any errors returned by the data validation, and adding
+                    // them to the response's errors array
+                    foreach($dataValidated->errors as $key => $error){
+                        array_push($response->errors, $error);
+                    }
                 }
             } else {
                 array_push($response->errors, "This user does not have permission to make a decison on an expense");
@@ -297,8 +307,6 @@
                 // of a user). Ordering the resulting rows as specified by the values above (either
                 // Cookie's or defaults)
                 $allExpenses = $wpdb->get_results("SELECT lp_financialReporter_expense.*, wp_users.display_name, lp_financialReporter_expense_category.name as 'category_name' FROM lp_financialReporter_expense LEFT JOIN wp_users ON lp_financialReporter_expense.employee_id = wp_users.id LEFT JOIN lp_financialReporter_expense_category ON lp_financialReporter_expense.category = lp_financialReporter_expense_category.id ORDER BY " . $sortOrder->orderBy . " " . $sortOrder->order);
-
-                $response->successful = true;
 
                 // Checking if any expenses were returned from the database
                 if(count($allExpenses) > 0) {
@@ -346,6 +354,8 @@
                     // in the table
                     $response->html .= "<tr><td colspan='10'>No employees have claimed for expenses yet</td></tr>";
                 }
+
+                $response->successful = true;
             } else {
                 array_push($response->errors, "This user does not have permission to view all employee expenses");
             }
@@ -369,11 +379,6 @@
                 "html" => ""
             );
 
-            // Initialising the result that will be returned to the caller
-            // before checking if this user has permissions to carry out this
-            // action or not, so that an empty array can be returned regardless
-            $userExpenses = array();
-
             // Ensuring this user is a subscriber i.e. Employee
             if(lp_financialReporter_User::getUserRole() == "subscriber") {
 
@@ -384,19 +389,12 @@
                 // cookies were provided
                 $sortOrder = self::checkCookiesForSortOrder();
 
-                // If debug is on, then log all errors from the database (TESTING PURPOSES)
-                if(get_option("lp_financialReporter_debug") == "on"){
-                    $wpdb->show_errors(true);
-                }
-
                 // Querying the expense database for all columns in the expense, as well as the
                 // category name (by completing a left join in the expense and expense_category
                 // tables, based on the category id of the expense matching with the id of a category
                 // in the expense_category table). Ordering the resulting rows as specified by the
                 // values above (either Cookie's or defaults)
                 $userExpenses = $wpdb->get_results("SELECT lp_financialReporter_expense.*, lp_financialReporter_expense_category.name as 'category_name' FROM lp_financialReporter_expense LEFT JOIN lp_financialReporter_expense_category ON lp_financialReporter_expense.category = lp_financialReporter_expense_category.id WHERE lp_financialReporter_expense.employee_id = " . get_current_user_id() . " ORDER BY " . $sortOrder->orderBy . " " . $sortOrder->order);
-
-                $response->successful = true;
 
                 // Checking if any expenses were returned from the database
                 if(count($userExpenses) > 0){
@@ -438,6 +436,8 @@
                     // that they have no previous claims
                     $response->html .= "<tr><td colspan='8'>You have no previous expense claims</td></tr>";
                 }
+
+                $response->successful = true;
             } else {
                 array_push($response->errors, "This user does not have permission to view individual employee expenses");
             }
@@ -463,11 +463,6 @@
 
             // Accessing the global wpdb variable, to access the database
             global $wpdb;
-
-            // If debug is on, then log all errors from the database (TESTING PURPOSES)
-            if (get_option("lp_financialReporter_debug") == "on") {
-                $wpdb->show_errors(true);
-            }
 
             // Querying the database for all categories in the expense_category table
             $categories = $wpdb->get_results("SELECT * FROM lp_financialReporter_expense_category");
@@ -495,7 +490,7 @@
         }
 
         // Publicly used method, invoked when an AJAX request is received
-        public static function addCategory($categoryName){
+        public static function addCategory($postData){
             // Creating a response object, which will be returned to the caller.
             // Setting up the default values, so that if none of the tasks in
             // this class are successful, the response will reflect this.
@@ -509,30 +504,47 @@
 
             // Ensuring this user is a administrator i.e. Employer
             if(lp_financialReporter_User::getUserRole() == "administrator") {
+                // Validating the data provided by the user i.e. to ensure that it is
+                // in the expected format, and that all required fields have been supplied
+                $dataValidated = lp_financialReporter_InputData::validateData($postData, array(
+                    "required" => "categoryName"
+                ));
 
-                // Checking that the category does not already exist. All category names
-                // in the categories table must be unique anyway, so this is just a check
-                // to prevent potential errors if a duplicate entry were attempted
-                if (self::categoryExists($categoryName) == false) {
+                // Checking if the data validation was successful
+                if($dataValidated->successful){
+                    // Sanitising the data passed to insure it contains no unexpected data
+                    $sanitisedData = lp_financialReporter_InputData::sanitiseData($postData);
 
-                    // Accessing the global wpdb variable, to access the database
-                    global $wpdb;
+                    // Checking that the category does not already exist. All category names
+                    // in the categories table must be unique anyway, so this is just a check
+                    // to prevent potential errors if a duplicate entry were attempted
+                    if (self::categoryExists($sanitisedData["categoryName"]) == false) {
 
-                    // Adding the new category to the expense_category table,
-                    // using a prepared statement. Passing the category name, which
-                    // must be a string
-                    $response->successful = $wpdb->query($wpdb->prepare(
-                        "INSERT INTO lp_financialReporter_expense_category (name) VALUES(%s)",
-                        array($categoryName)
-                    ));
+                        // Accessing the global wpdb variable, to access the database
+                        global $wpdb;
 
-                    // Setting the html of the response object to be equal to all of the
-                    // categories (including the new one added above). This is so the user won't
-                    // have to make an additional AJAX request in order to update the categories
-                    // on screen
-                    $response->html = self::getUpdatedCategories();
+                        // Adding the new category to the expense_category table,
+                        // using a prepared statement. Passing the category name, which
+                        // must be a string
+                        $response->successful = $wpdb->query($wpdb->prepare(
+                            "INSERT INTO lp_financialReporter_expense_category (name) VALUES(%s)",
+                            array($sanitisedData["categoryName"])
+                        ));
+
+                        // Setting the html of the response object to be equal to all of the
+                        // categories (including the new one added above). This is so the user won't
+                        // have to make an additional AJAX request in order to update the categories
+                        // on screen
+                        $response->html = self::getUpdatedCategories();
+                    } else {
+                        array_push($response->errors, "A category with this name already exists");
+                    }
                 } else {
-                    array_push($response->errors, "A category with this name already exists");
+                    // Looping through any errors that may have been returned from the data
+                    // validation, and adding them to the response errors array
+                    foreach ($dataValidated->errors as $key => $error) {
+                        array_push($response->errors, $error);
+                    }
                 }
             } else {
                 array_push($response->errors, "This user does not have permission to add categories");
@@ -545,7 +557,7 @@
         }
 
         // Publicly used method, invoked when an AJAX request is received
-        public static function removeCategory($categoryId) {
+        public static function removeCategory($postData) {
             // Creating a response object, which will be returned to the caller.
             // Setting up the default values, so that if none of the tasks in
             // this class are successful, the response will reflect this.
@@ -559,38 +571,50 @@
 
             // Ensuring this user is a administrator i.e. Employer
             if(lp_financialReporter_User::getUserRole() == "administrator") {
+                // Validating the data provided by the user i.e. to ensure that it is
+                // in the expected format, and that all required fields have been supplied
+                $dataValidated = lp_financialReporter_InputData::validateData($postData, array(
+                    "required" => "categoryId",
+                    "number" => "categoryId"
+                ));
 
-                // Checking that this category is not currently in use (if it is, then
-                // it can't be deleted). Technically, a user wouldn't have been given
-                // the option to delete this category is it was already in use, so this
-                // is more to double check that it hasn't been used since their page was
-                // last loaded, or that this request wasn't a malicious one (again, because
-                // the option wouldn't have been there to begin with)
-                if (self::categoryInUse($categoryId) == false) {
+                // Checking if the data validation was successful
+                if($dataValidated->successful){
+                    $sanitisedData = lp_financialReporter_InputData::sanitiseData($postData);
 
-                    // Accessing the global wpdb variable, to access the database
-                    global $wpdb;
+                    // Checking that this category is not currently in use (if it is, then
+                    // it can't be deleted). Technically, a user wouldn't have been given
+                    // the option to delete this category is it was already in use, so this
+                    // is more to double check that it hasn't been used since their page was
+                    // last loaded, or that this request wasn't a malicious one (again, because
+                    // the option wouldn't have been there to begin with)
+                    if (self::categoryInUse($sanitisedData["categoryId"]) == false) {
 
-                    // If debug is on, then log all errors from the database (TESTING PURPOSES)
-                    if(get_option("lp_financialReporter_debug") == "on"){
-                        $wpdb->show_errors(true);
+                        // Accessing the global wpdb variable, to access the database
+                        global $wpdb;
+
+                        // Deleting the category from the expense_category database, using the wpdb
+                        // delete method. Passing in the category id, which must be a number
+                        $response->successful = $wpdb->delete(
+                            "lp_financialReporter_expense_category",
+                            array("id" => $sanitisedData["categoryId"]),
+                            array("%d")
+                        );
+
+                        // Setting the html of the response object to be equal to all of the
+                        // categories (which will no longer include the one that was just deleted
+                        // above). This is so the user won't have to make an additional AJAX request
+                        // in order to update the categories on screen
+                        $response->html = self::getUpdatedCategories();
+                    } else {
+                        array_push($response->errors, "This category is currently in use, and cannot be deleted");
                     }
-
-                    // Deleting the category from the expense_category database, using the wpdb
-                    // delete method. Passing in the category id, which must be a number
-                    $response->successful = $wpdb->delete(
-                        "lp_financialReporter_expense_category",
-                        array("id" => $categoryId),
-                        array("%d")
-                    );
-
-                    // Setting the html of the response object to be equal to all of the
-                    // categories (which will no longer include the one that was just deleted
-                    // above). This is so the user won't have to make an additional AJAX request
-                    // in order to update the categories on screen
-                    $response->html = self::getUpdatedCategories();
                 } else {
-                    array_push($response->errors, "This category is currently in use, and cannot be deleted");
+                    // Looping through any errors that may have been returned from the data
+                    // validation, and adding them to the response errors array
+                    foreach ($dataValidated->errors as $key => $error) {
+                        array_push($response->errors, $error);
+                    }
                 }
             } else {
                 array_push($response->errors, "This user does not have permission to remove categories");

@@ -30,6 +30,10 @@
 
         // Attempting to call an action based on the action param passed to the query string of the url
         public static function attemptAction($action){
+            // Creating a response object, which will be returned to the caller.
+            // Setting up the default values, so that if none of the tasks in
+            // this class are successful, the response will reflect this.
+            // Successful will be a boolean value, errors will be stored in an array
             $response = (object) array(
                 "successful" => false,
                 "errors" => array()
@@ -44,15 +48,15 @@
                         break;
                     }
                     case "expenseApproval": {
-                        $response = lp_financialReporter_Expense::makeDecisionOnExpense($_POST["expenseId"], $_POST["decision"]);
+                        $response = lp_financialReporter_Expense::makeDecisionOnExpense($_POST);
                         break;
                     }
                     case "addNewExpenseCategory": {
-                        $response = lp_financialReporter_Expense::addCategory($_POST["categoryName"]);
+                        $response = lp_financialReporter_Expense::addCategory($_POST);
                         break;
                     }
                     case "removeExpenseCategory": {
-                        $response = lp_financialReporter_Expense::removeCategory($_POST["categoryId"]);
+                        $response = lp_financialReporter_Expense::removeCategory($_POST);
                         break;
                     }
                     case "saveEmployerSettings": {
@@ -71,7 +75,7 @@
                         break;
                     }
                     case "removeExpense": {
-                        $response = lp_financialReporter_Expense::removeExpense($_POST["expenseId"]);
+                        $response = lp_financialReporter_Expense::removeExpense($_POST);
                         break;
                     }
                     case "getAllExpensesForCurrentUser": {
@@ -90,28 +94,26 @@
         }
 
         // Registering a new user
-        public static function registerNewUser($registrationData) {
+        public static function registerNewUser($postData) {
+            // Creating a response object, which will be returned to the caller.
+            // Setting up the default values, so that if none of the tasks in
+            // this class are successful, the response will reflect this.
+            // Successful will be a boolean value, errors will be stored in an array
             $response = (object) array(
                 "email" => null,
                 "errors" => array()
             );
 
             // Checking if the data provied is valid, based on the options specified
-            $dataValidated = lp_financialReporter_InputData::validateData($registrationData, array(
-                "required" => array("user_login", "first_name", "last_name", "email"),
+            $dataValidated = lp_financialReporter_InputData::validateData($postData, array(
+                "required" => array("username", "first_name", "last_name", "email"),
                 "email" => array("email")
             ));
 
-            // Looping through any errors that may have been returned from the data
-            // validation, and adding them to the response errors array
-            foreach($dataValidated->errors as $key => $error){
-                array_push($response->errors, $error);
-            }
-
             // If the data is validated then proceed with the registration
-            if($dataValidated->dataValidated) {
-                // Sanitising the data provided
-                $sanitisedData = lp_financialReporter_InputData::sanitiseData($registrationData);
+            if($dataValidated->successful) {
+                // Sanitising the data passed to insure it contains no unexpected data
+                $sanitisedData = lp_financialReporter_InputData::sanitiseData($postData);
 
                 // Creating a temporary user data array, that wil be passed to the wp_insert_user
                 // function. Using the sanitised data to access the values.
@@ -122,6 +124,8 @@
                     "user_email" => $sanitisedData["email"]
                 );
 
+                // When testing locally, no registration email will be generated, so defaulting
+                // the password to "testing"
                 if($_SERVER['SERVER_NAME'] == "localhost") {
                     $userData["user_pass"] = "testing";
                 }
@@ -129,21 +133,24 @@
                 // Creating a new user, and storing the resulting ID in a temporary variable
                 $userId = wp_insert_user($userData);
 
-
                 // Checking if the attempt to create the user resulted in any errors
                 if(is_wp_error($userId)) {
+                    // Looping through any of the errors stored in the user id variable,
                     foreach($userId->errors as $key => $error){
+                        // Looping through the value of each error
                         foreach($error as $errKey => $errorData){
+                            // Adding the error to the response object errors array
                             array_push($response->errors, $errorData);
                         }
                     }
                 } else {
-                    // If there was no error returned from the insert, then log this user in
-
-                    // Setting the user's meta data for their first and last name
+                    // Since there was no error returned from the insert, setting the user's
+                    // meta data for their first and last name
                     update_user_meta($userId, "first_name", $sanitisedData["first_name"]);
                     update_user_meta($userId, "last_name", $sanitisedData["last_name"]);
 
+                    // Determining whether the site is running locally (testing) or remotely,
+                    // as no email will be send if it is running locally
                     if($_SERVER['SERVER_NAME'] == "localhost"){
                         array_push($response->errors, "As this site is running locally (for testing purposes), no registration email will be sent, and so your password has defaulted to 'testing'.");
                     } else {
@@ -153,6 +160,12 @@
                         $response->email = $sanitisedData["email"];
                     }
                 }
+            } else {
+                // Looping through any errors that may have been returned from the data
+                // validation, and adding them to the response errors array
+                foreach($dataValidated->errors as $key => $error){
+                    array_push($response->errors, $error);
+                }
             }
 
             // Returning the response object to the caller
@@ -160,36 +173,49 @@
         }
 
         public static function saveEmployerSettings($postData) {
+            // Creating a response object, which will be returned to the caller.
+            // Setting up the default values, so that if none of the tasks in
+            // this class are successful, the response will reflect this.
+            // Successful will be a boolean value, errors will be stored in an array
             $response = (object) array(
                 "successful" => false,
                 "errors" => array()
             );
 
-            $validateData = lp_financialReporter_InputData::validateData($postData, array());
+            // Ensuring this user is a administrator i.e. employer
+            if(lp_financialReporter_User::getUserRole() == "administrator") {
+                // Validating the data provided by the user i.e. to ensure that it is
+                // in the expected format, and that all required fields have been supplied
+                $dataValidated = lp_financialReporter_InputData::validateData($postData, array(
+                    "required" => "deleteDatabaseOnThemeDeactivate", "receiptsRequiredForAllExpenses",
+                    "boolean" => "deleteDatabaseOnThemeDeactivate", "receiptsRequiredForAllExpenses"
+                ));
 
-            if($validateData->dataValidated){
-                $santisedData = lp_financialReporter_InputData::sanitiseData($_POST);
+                // Checking that the data validation was successful
+                if ($dataValidated->successful) {
+                    // Sanitising the data passed to insure it contains no unexpected data
+                    $santisedData = lp_financialReporter_InputData::sanitiseData($_POST);
 
-                if(isset($santisedData["deleteDatabaseOnThemeDeactivate"])) {
+                    // Updating the relevant options, with the values passed to the server
                     $response->successful = update_option("lp_financialReporter_deleteDatabaseOnThemeDeactivate", $santisedData["deleteDatabaseOnThemeDeactivate"]);
-                } else {
-                    array_push($response->errors, "No value was given for whether or not the expense databases should be deleted upon theme deactivation");
-                }
-
-                if(isset($santisedData["receiptsRequiredForAllExpenses"])) {
                     $response->successful = update_option("lp_financialReporter_receiptsRequiredForAllExpenses", $santisedData["receiptsRequiredForAllExpenses"]);
                 } else {
-                    array_push($response->errors, "No value was given for whether or not receipts are required for all expenses");
+                    // Looping through any errors returned by the data validation, and adding
+                    // them to the response's errors array
+                    foreach($dataValidated->errors as $key => $error){
+                        array_push($response->errors, $error);
+                    }
                 }
             } else {
-                foreach($validateData->errors as $error){
-                    array_push($response->errors, $error);
-                }
+                array_push($response->errors, "This user does not have permission to change these settings");
             }
+
             return $response;
         }
 
+        // Publicly used method, set up as an action in the Setup class
         public static function useCustomLogin() {
+            // Redirecting all login attempts to the custom login page of the theme
             return home_url("/user-login");
         }
     }

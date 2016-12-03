@@ -57,6 +57,8 @@
             return $successful;
         }
 
+        // Public method, invoked when the theme is being deactivated, and the Employer has specified
+        // that all expense should be deleted
         public static function deleteAllReceipts() {
             $successful = false;
             global $wpdb;
@@ -69,7 +71,8 @@
             return $successful;
         }
 
-        // Used as a filter (which is added in the Setup class)
+        // Public method, invoked when the scripts are being added to a page (based on
+        // a filter defined in the Setup class)
         public static function useCustomDir($dirs) {
             $customDir = "/receipts";
             $dirs['subdir'] = $customDir;
@@ -79,7 +82,8 @@
             return $dirs;
         }
 
-        // Used as a filter (which is added in the Setup class)
+        // Public method, invoked when the scripts are being added to a page (based on
+        // a filter defined in the Setup class)
         public static function useCustomFilename($file) {
             $file['name'] = time() . "_" . $file['name'];
             return $file;
