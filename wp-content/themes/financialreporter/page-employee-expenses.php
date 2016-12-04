@@ -22,6 +22,8 @@
                 <select name="category" required>
                     <option selected disabled class="hidden"></option>
                     <?php
+                        // Generating the options for the select menu, based on the current
+                        // available categories for expenses
                         $allCategories = lp_financialReporter_Expense::getAllCategories();
                         echo $allCategories->html;
                     ?>
@@ -64,6 +66,7 @@
                 </thead>
                 <tbody id="employeeExpenseData">
                     <?php
+                        // Getting all expenses for the current user
                         $expenseData = lp_financialReporter_Expense::getAllExpensesForCurrentUser();
                         echo $expenseData->html;
                     ?>

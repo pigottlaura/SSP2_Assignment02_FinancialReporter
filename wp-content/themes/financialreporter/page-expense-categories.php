@@ -43,6 +43,7 @@
                 </thead>
                 <tbody id="employerExpenseCategories">
                     <?php
+                        // Getting the current categories of the site
                         $categories = lp_financialReporter_Expense::getAllCategories();
                         echo $categories->html;
                     ?>

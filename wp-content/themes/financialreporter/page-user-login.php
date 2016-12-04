@@ -20,12 +20,17 @@
         <div class="row">
             <div class="col-xs-6">
                 <?php
+                    // Specifying the options through which the login form will
+                    // be generated
                     $loginFormArgs = array(
                         "label_remember" => __("Remember Me"),
                         "label_log_in" => __("Login"),
                         "redirect" => home_url("/expenses"),
                         "remember" => true
                     );
+
+                    // Generating the Wordpress login form, based on the array
+                    // options declared above
                     wp_login_form($loginFormArgs);
                 ?>
                 <a href="<?php echo home_url("/user-register"); ?>">Register</a> or

@@ -7,6 +7,7 @@
             wp_redirect(home_url("/expenses"));
         }
     } else {
+        // This user is not logged in, so redirecting them to the login page
         wp_redirect(home_url("/user-login"));
     }
 ?>
@@ -57,6 +58,7 @@
                 </thead>
                 <tbody id="employerExpenseData">
                     <?php
+                        // Getting all expenses for all users
                         $expenseData = lp_financialReporter_Expense::getAllExpenses();
                         echo $expenseData->html;
                     ?>

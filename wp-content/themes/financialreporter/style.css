@@ -6,29 +6,38 @@ Version: 1
 Author: Laura Pigott
 Author URI: http://www.pigottlaura.com
 */
+
+/* GENERAL */
 html {
     overflow-y: scroll;
 }
+p label {
+    margin: initial !important;;
+    width: initial !important;
+}
+
+
+/* MAIN NAVIGATION */
 nav ul {
     display: inline-flex;
     width: 100%;
     margin-top: 20px;
 }
-
 nav ul, ul#main-sidebar{
     padding: 0;
     list-style: none;
 }
-
 nav ul li, ul#main-sidebar li {
     flex: 1;
 }
 
-.errors {
-    color: #FF0000;
+
+/* FORMS */
+form select {
+    height: 26px;
 }
-.text-right {
-    text-align: right;
+form input[type="submit"] {
+    width: 100%;
 }
 form label, form input:not([type="checkbox"]), form select, form textarea {
     display: inline-block;
@@ -41,18 +50,8 @@ form input:not([type="checkbox"]), form select, form textarea {
 form label {
     margin-bottom: 2%;
 }
-p label {
-    margin: initial !important;;
-    width: initial !important;
-}
-form select {
-    height: 26px;
-}
 
-form input[type="submit"] {
-    width: 100%;
-}
-
+/* CUSTOM ADMIN BAR */
 #customAdminBar {
     height: 60px;
     text-align: right;
@@ -65,28 +64,35 @@ form input[type="submit"] {
     margin-left: 20px;
 }
 
+
+/* TABLES */
 table {
     width: 100%;
 }
-.widgettitle {
-    font-size: 20px;
-}
-
-.hidden {
-    display: none;
-}
-
-.fullWidth {
-    width: 100% !important;
-}
-
-.noMargin {
-    margin: 0 !important;
-}
-
 th .glyphicon {
     margin-left: 5px;
 }
 th.orderHeading {
     cursor: pointer;
+}
+
+
+/* CLASSES */
+.errors {
+    color: #FF0000;
+}
+.fullWidth {
+    width: 100% !important;
+}
+.hidden {
+    display: none;
+}
+.noMargin {
+     margin: 0 !important;
+ }
+.text-right {
+    text-align: right;
+}
+.widgettitle {
+    font-size: 20px;
 }

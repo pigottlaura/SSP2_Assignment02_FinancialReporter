@@ -6,7 +6,6 @@
         <?php include("sidebar.php"); ?>
     </div>
     <div class="col-xs-9">
-        default
         <?php include("components/the_loop.php"); ?>
     </div>
 </div>

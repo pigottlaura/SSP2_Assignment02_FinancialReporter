@@ -14,6 +14,9 @@ window.onload = function(e){
 
     // Setting up any required event listeners
     setupEventListeners();
+
+    // Initialising the order indicator icon
+    updateTableHeadingIcons();
 }
 
 function setupCookies() {

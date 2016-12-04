@@ -6,7 +6,6 @@
         <?php include("sidebar.php"); ?>
     </div>
     <div class="col-xs-9">
-        home
         <?php include("components/the_loop_noLinks.php"); ?>
     </div>
 </div>
