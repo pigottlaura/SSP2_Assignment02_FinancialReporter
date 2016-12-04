@@ -31,6 +31,7 @@
                     "number" => array("category", "cost")
                 ));
 
+                array_push($response->errors, $dataValidated);
                 // Checking if the data validation was successful
                 if ($dataValidated->successful) {
 

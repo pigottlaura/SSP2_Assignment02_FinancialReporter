@@ -27,14 +27,21 @@
             }
         }
 
+        // Public method, invoked when the theme is deactivated
         public static function deleteThemeTables() {
+            // Checking if the Employer has specified that expenses are deleted
+            // when the theme is deactivated
             if(get_option("lp_financialReporter_deleteDatabaseOnThemeDeactivate") == "true") {
+                // Accessing the global wpdb variable, to access the database
                 global $wpdb;
 
+                // Deleting all receipts
                 lp_financialReporter_File::deleteAllReceipts();
 
+                // Looping through each of the required tables and dropping
+                // them from the database
                 foreach (self::$requiredTables as $tableName) {
-                    $success = $wpdb->query("DROP TABLE " . $tableName);
+                    $wpdb->query("DROP TABLE " . $tableName);
                 }
             }
         }

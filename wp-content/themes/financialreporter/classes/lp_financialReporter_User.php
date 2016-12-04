@@ -89,7 +89,10 @@
                 }
             }
 
+            // Adding the requested action to the response object
             $response->action = $action;
+
+            // Returning the response object to the caller
             return $response;
         }
 
